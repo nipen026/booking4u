@@ -32,17 +32,17 @@ const Footer = () => {
 {/* Quick Links */}
 <Grid item xs={12} sm={4}>
     <Typography variant="h6" fontWeight="bold">Quick Links</Typography>
-    <Link href="#" color="inherit" underline="none" sx={{ display: 'block', mt: 1 }}>About Us</Link>
-    <Link href="#" color="inherit" underline="none" sx={{ display: 'block', mt: 1 }}>Venues</Link>
-    <Link href="#" color="inherit" underline="none" sx={{ display: 'block', mt: 1 }}>How it Works</Link>
-    <Link href="#" color="inherit" underline="none" sx={{ display: 'block', mt: 1 }}>FAQs</Link>
+    <Link href="/" color="inherit" underline="none" sx={{ display: 'block', mt: 1 }}>Home</Link>
+    <Link href="/venues" color="inherit" underline="none" sx={{ display: 'block', mt: 1 }}>Venues</Link>
+    <Link href="/bookings" color="inherit" underline="none" sx={{ display: 'block', mt: 1 }}>Bookings</Link>
+    <Link href="/contact" color="inherit" underline="none" sx={{ display: 'block', mt: 1 }}>Contact</Link>
 </Grid>
 
 {/* Contact Us */}
 <Grid item xs={12} sm={4}>
     <Typography variant="h6" fontWeight="bold">Contact Us</Typography>
-    <Typography variant="body2" sx={{ mt: 1 }}>support@booking4u.in</Typography>
-    <Typography variant="body2" sx={{ mt: 1 }}>+91 84698 38559</Typography>
+    <Typography variant="body2" sx={{ mt: 1 }}>contact.booking4u@gmail.com</Typography>
+    <Typography variant="body2" sx={{ mt: 1 }}>+91 82388 49664</Typography>
     <Typography variant="body2" sx={{ mt: 1 }}>Surat, Gujrat</Typography>
 </Grid>
 </Grid>
@@ -53,12 +53,12 @@ const Footer = () => {
     © 2024 booking4u.in. All rights reserved.
 </Typography>
 
-<Box sx={{ display: 'flex', gap: 2 }}>
+{/* <Box sx={{ display: 'flex', gap: 2 }}>
     <IconButton sx={{ color: '#fff' }}><Facebook /></IconButton>
     <IconButton sx={{ color: '#fff' }}><Twitter /></IconButton>
     <IconButton sx={{ color: '#fff' }}><Instagram /></IconButton>
     <IconButton sx={{ color: '#fff' }}><LinkedIn /></IconButton>
-</Box>
+</Box> */}
 </Box>
       </Container>
         </Box>

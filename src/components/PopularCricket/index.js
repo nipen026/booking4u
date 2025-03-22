@@ -33,7 +33,8 @@ const cricketBoxes = [
     }
 ];
 
-const PopularCricket = () => {
+const PopularCricket = ({boxesData}) => {
+
     return (
         <Box
             sx={{
@@ -46,41 +47,46 @@ const PopularCricket = () => {
             </Typography>
 
             <Grid container spacing={2}>
-                {cricketBoxes.map((box) => (
+                {boxesData.map((box) => (
                     <Grid item xs={12} sm={6} md={4} key={box.id}>
-                        <Link to={'/box-details'} style={{ textDecoration: 'none' }}>
+                        <Link to={`/box-details/${box.name}`} state={box.id} style={{ textDecoration: 'none' }}>
                             <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
                                 <CardMedia
                                     component="img"
                                     height="180"
-                                    image={box.image}
+                                    image={`${process.env.REACT_APP_BASE_URL}${box.images[0]}`}
                                     alt={box.title}
                                 />
                                 <CardContent>
-                                    <Typography variant="h6" fontWeight="bold" sx={{textAlign:'left'}}>
-                                        {box.title}
+                                    <Typography variant="h6" fontWeight="bold" sx={{textAlign:'left',textTransform:'capitalize'}}>
+                                        {box.name}
                                     </Typography>
 
                                     <Typography
                                         variant="body2"
                                         color="text.secondary"
-                                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}
+                                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 ,textTransform:'capitalize'}}
                                     >
                                         <LocationOnIcon />
                                         {box.location}
                                     </Typography>
 
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                                        <Rating value={box.rating} precision={0.5} readOnly />
+                                        <Rating value={5} precision={0.5} readOnly />
                                         <Typography variant="body2" color="text.secondary">
-                                            ({box.reviews})
+                                            (5)
                                         </Typography>
                                     </Box>
 
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                                        <Typography variant="h6" sx={{ color: '#000' }} fontWeight="bold" color="primary">
-                                            {box.price}
+                                    <Box sx={{ display: 'flex',justifyContent:'space-between', alignItems: 'center', mt: 2 }}>
+                                       <Box sx={{ display: 'flex',justifyContent:'space-between', alignItems: 'center', gap:'10px' }}>
+                                       <Typography variant="h6" sx={{ color: '#000' }} fontWeight="bold" color="primary">
+                                        ₹{box.discountPrice}.00
                                         </Typography>
+                                        <del>
+                                        ₹{box.pricePerHour}.00
+                                        </del>
+                                       </Box>
                                         <Button variant="outlined" sx={{ borderColor: 'forestgreen', color: 'forestgreen' }}>Book Now</Button>
                                     </Box>
                                 </CardContent>

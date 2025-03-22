@@ -11,22 +11,32 @@ import MyBookingPage from './pages/MyBookings';
 import MyProfile from './pages/MyProfile';
 import ContactPage from './pages/Contact';
 import VenuePage from './pages/VenuePage';
+import MyBox from './pages/MyBox';
+import MySlots from './pages/MySlots';
+import ProtectedRoute from './common/ProtecedRoute';
 function App() {
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
         <Routes>
-          <Route path='/' element={<Home/>}/>
-          <Route path='/box-details' element={<Booking/>}/>
-          <Route path='/payment' element={<PaymentPage/>}/>
-          <Route path='/bookings' element={<MyBookingPage/>}/>
-          <Route path='/register' element={<Register/>}/>
-          <Route path='/login' element={<Login/>}/>
-          <Route path='/myprofile' element={<MyProfile/>}/>
-          <Route path='/contact' element={<ContactPage/>}/>
-          <Route path='/venues' element={<VenuePage/>}/>
+          <Route path='/' element={<Home />} />
+          <Route path='/box-details/:name' element={<Booking />} />
+          <Route path='/payment/:id' element={<PaymentPage />} />
+          <Route path='/bookings' element={<MyBookingPage />} />
+          <Route path='/register' element={<Register />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/myprofile' element={<MyProfile />} />
+          <Route path='/contact' element={<ContactPage />} />
+          <Route path='/venues' element={<VenuePage />} />
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route path='/myBox' element={<MyBox />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route path='/slots/:id' element={<MySlots />} />
+          </Route>
+
         </Routes>
-      
+
       </ThemeProvider>
     </div>
   );

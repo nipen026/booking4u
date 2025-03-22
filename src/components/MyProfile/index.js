@@ -3,16 +3,15 @@ import {
     Avatar,
     Box,
     Button,
-    Container,
     Grid,
     TextField,
     Typography
 } from '@mui/material';
+import { GET_USER } from '../Api/getApi';
+import { UPDATE_USER } from '../Api/api';
 import toast, { ToastBar, Toaster } from 'react-hot-toast';
-import { GET_USER } from '../../Api/get';
-import { UPDATE_USER } from '../../Api/post';
 
-const Profile = () => {
+const MyProfile = () => {
     const [profileId,setProfileId] = useState()
     const [profile, setProfile] = useState({
         firstName: '',
@@ -66,8 +65,7 @@ const Profile = () => {
         })
     }
     return (
-       <Container maxWidth={'xl'}>
-         <Box sx={{ p: { xs: 2, md: 4 }, mx: 'auto', borderRadius: 3 }}>
+        <Box sx={{ p: { xs: 2, md: 4 }, mx: 'auto', bgcolor: '#f9f9f9', borderRadius: 3 }}>
             <Toaster/>
             <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
                 Account Preferences
@@ -174,14 +172,14 @@ const Profile = () => {
 
                         {/* Action Buttons */}
                         <Grid item xs={12} display="flex" gap={2} justifyContent="flex-end">
-                            <Button variant="contained" sx={{background:'forestgreen'}} onClick={()=>updateUser(profile)}>Update</Button>
+                            <Button variant="outlined" color="error">Cancel</Button>
+                            <Button variant="contained" color="primary" onClick={()=>updateUser(profile)}>Update</Button>
                         </Grid>
                     </Grid>
                 </Grid>
             </Grid>
         </Box>
-       </Container>
     );
 };
 
-export default Profile;
+export default MyProfile;

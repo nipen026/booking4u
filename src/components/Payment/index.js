@@ -1,127 +1,206 @@
 import React, { useState } from 'react';
-import { Box, Button, Card, Checkbox, Container, FormControlLabel, Grid, TextField, Typography, Tabs, Tab } from '@mui/material';
-import { FaRupeeSign } from "react-icons/fa";
+import {
+    Box, Button, Card, Container, FormControlLabel, Grid, TextField, Typography,
+    FormLabel, RadioGroup, Radio, CircularProgress, Backdrop
+} from '@mui/material';
+import { FaRupeeSign, FaCalendarAlt, FaUser } from "react-icons/fa";
 import { BsFillTelephoneFill } from "react-icons/bs";
-import { FaCalendarAlt } from "react-icons/fa";
-import { FaUser } from "react-icons/fa";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import dayjs from 'dayjs';
+import { ADD_PAYMENT, VERIFY_PAYMENT } from '../../Api/post';
+import { useNavigate } from 'react-router-dom';
+dayjs.extend(customParseFormat);
 
-const Payment = () => {
-    const [paymentMethod, setPaymentMethod] = useState(0);
+const Payment = ({ boxData }) => {
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        paymentMethod: "prepaid",
+    });
+    const [loading, setLoading] = useState(false); // Loader state
+    const [errors, setErrors] = useState({});
+    const navigate = useNavigate();
 
-    const handleChange = (event, newValue) => {
-        setPaymentMethod(newValue);
+    const startTime = dayjs(boxData.Slot.startTime, "HH:mm:ss");
+    const endTime = dayjs(boxData.Slot.endTime, "HH:mm:ss").add(1, "hour");
+    const totalHours = endTime.diff(startTime, "hour");
+    const totalAmount = totalHours * boxData?.Box?.pricePerHour + 10;
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        setErrors((prev) => ({ ...prev, [name]: value ? "" : prev[name] }));
+    };
+
+    const validateForm = () => {
+        let newErrors = {};
+
+        if (!formData.name.trim()) newErrors.name = "Full Name is required";
+        if (!formData.email.trim()) newErrors.email = "Email is required";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+            newErrors.email = "Enter a valid email address";
+
+        if (!formData.phone.trim()) newErrors.phone = "Phone Number is required";
+        else if (!/^\d{10}$/.test(formData.phone))
+            newErrors.phone = "Enter a valid 10-digit phone number";
+
+        if (!formData.paymentMethod) newErrors.paymentMethod = "Select a payment method";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
+
+        setLoading(true); // Start loading
+
+        try {
+            const paymentData = {
+                ...formData,
+                bookingId: boxData.id,
+                amount: totalAmount,
+            };
+
+            const orderResponse = await ADD_PAYMENT(paymentData);
+            if (!orderResponse || !orderResponse.data) {
+                throw new Error("Failed to create order");
+            }
+
+            const order = orderResponse.data.data;
+
+            const options = {
+                key: "rzp_test_OQTPNvPZpoAUvm",
+                amount: order.amount,
+                currency: order.currency,
+                name: boxData?.Box?.name,
+                description: "booking4u.in",
+                order_id: order.id,
+                handler: async function (response) {
+                    try {
+                        const verifyData = {
+                            order_id: order.id,
+                            payment_id: response.razorpay_payment_id,
+                            signature: response.razorpay_signature,
+                            bookingId: boxData.id,
+                        };
+
+                        const verifyRes = await VERIFY_PAYMENT(verifyData);
+                        if (verifyRes.data.status) {
+                            navigate('/bookings');
+                        } else {
+                            console.log("❌ Payment Failed!");
+                        }
+                    } catch (error) {
+                        console.error("Verification Error:", error);
+                        alert("Payment verification failed! Please try again.");
+                    } finally {
+                        setLoading(false); // Stop loading
+                    }
+                },
+                prefill: {
+                    name: formData.name,
+                    email: formData.email,
+                    contact: formData.phone,
+                },
+                theme: {
+                    color: "#228b22",
+                },
+            };
+
+            const razor = new window.Razorpay(options);
+            razor.open();
+        } catch (error) {
+            console.error("Payment Error:", error);
+            alert("❌ Payment failed! Please try again.");
+            setLoading(false); // Stop loading
+        }
     };
 
     return (
         <Container maxWidth="xl" sx={{ py: 4 }}>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
-                Complete Your Payment
-            </Typography>
+            {/* Full Page Loader */}
+            <Backdrop open={loading} sx={{ color: '#fff', zIndex: 9999 }}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
 
             <Grid container spacing={3}>
-                {/* Booking Summary */}
                 <Grid item xs={12} md={8}>
                     <Card sx={{ p: 3, mb: 3 }}>
-                        <Typography variant="h5" sx={{textAlign:'left'}} fontWeight="bold">
-                            Booking Summary
+                        <Typography variant="h5" fontWeight="bold" align='left'>Booking Summary</Typography>
+                        <Typography variant="subtitle1" sx={{ mt: 1 }} align='left'><strong>{boxData?.Box?.name}</strong></Typography>
+                        <Typography sx={{ display: 'flex', gap: '10px', alignItems: 'center', mt: 1 }}>
+                            <FaCalendarAlt />
+                            Check-in: {dayjs(boxData.Slot.date).format("DD MMM YYYY")}
+                            <span style={{ fontWeight: 'bold' }}>{startTime.format("hh:mm A")}</span>
                         </Typography>
-
-                        <Typography variant="subtitle1" sx={{ mt: 1, textAlign: 'left' }}>
-                            <strong>Luxury Resort & Spa</strong>
-                        </Typography>
-                        <Typography sx={{ textAlign: 'left',display:'flex',gap:'10px',alignItems:'center',margin:'10px 0px' }}><FaCalendarAlt/> Check-in: Feb 15, 2024</Typography>
-                        <Typography sx={{ textAlign: 'left',display:'flex',gap:'10px',alignItems:'center',margin:'10px 0px' }}><FaCalendarAlt/> Check-out: Feb 18, 2024</Typography>
-                        <Typography sx={{ textAlign: 'left',display:'flex',gap:'10px',alignItems:'center',margin:'10px 0px' }}><FaUser/> 2 Adults, 1 Room</Typography>
-
-                        <Typography sx={{ mt: 2, textAlign: 'left' }} fontWeight="bold" >
-                            Booking Reference: <span style={{ color: '#228b22' }}>BK4U-2024-12345</span>
+                        <Typography sx={{ display: 'flex', gap: '10px', alignItems: 'center', mt: 1 }}>
+                            <FaCalendarAlt />
+                            Check-out: {dayjs(boxData.Slot.date).format("DD MMM YYYY")}
+                            <span style={{ fontWeight: 'bold' }}>{endTime.format("hh:mm A")}</span>
                         </Typography>
                     </Card>
 
-                    {/* Payment Methods */}
                     <Card sx={{ p: 3 }}>
-                        <Tabs value={paymentMethod} onChange={handleChange}>
-                            <Tab label="Card" />
-                            <Tab label="Net Banking" />
-                            <Tab label="UPI" />
-                        </Tabs>
-
-                        {/* Card Payment Form */}
-                        {paymentMethod === 0 && (
-                            <Box sx={{ mt: 2 }}>
-                                <TextField fullWidth label="Card Number" placeholder="1234 5678 9012 3456" margin="normal" />
-                                <TextField fullWidth label="Cardholder Name" placeholder="Name on card" margin="normal" />
-                                <Grid container spacing={2}>
-                                    <Grid item xs={6}>
-                                        <TextField fullWidth label="Expiry Date" placeholder="MM/YY" />
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <TextField fullWidth label="CVV" placeholder="123" />
-                                    </Grid>
-                                </Grid>
-
-                                <FormControlLabel
-                                    control={<Checkbox />}
-                                    label="Save card for future payments"
-                                    sx={{ mt: 1 }}
-                                />
-                            </Box>
-                        )}
+                        <Box component="form" onSubmit={handleSubmit}>
+                            <TextField
+                                fullWidth
+                                label="Full Name"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                                margin="normal"
+                                error={!!errors.name}
+                                helperText={errors.name}
+                            />
+                            <TextField
+                                fullWidth
+                                label="Email Address"
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                required
+                                margin="normal"
+                                error={!!errors.email}
+                                helperText={errors.email}
+                            />
+                            <TextField
+                                fullWidth
+                                label="Phone Number"
+                                type="tel"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                required
+                                margin="normal"
+                                error={!!errors.phone}
+                                helperText={errors.phone}
+                            />
+                            <FormLabel component="legend" sx={{ mt: 2, fontWeight: "bold", textAlign: 'left' }}>
+                                Select Payment Method
+                            </FormLabel>
+                            <RadioGroup value={formData.paymentMethod} onChange={handleChange} name="paymentMethod">
+                                <FormControlLabel value="prepaid" control={<Radio />} label="(UPI, Net Banking, Card, Credit Card)" />
+                                <FormControlLabel value="box" control={<Radio />} label="Pay on Box" />
+                            </RadioGroup>
+                        </Box>
                     </Card>
                 </Grid>
 
-                {/* Price Details */}
                 <Grid item xs={12} md={4}>
                     <Card sx={{ p: 3 }}>
-                        <Typography variant="h6" fontWeight="bold" mb={2}>
-                            Price Details
-                        </Typography>
-                        <Typography>Room Charges: ₹10,999</Typography>
-                        <Typography>Taxes & Fees: ₹1,500</Typography>
-                        <Typography variant="h6" fontWeight="bold" mt={2}>
-                            Total Amount: ₹12,499
-                        </Typography>
-
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            fullWidth
-                            sx={{ mt: 2,background:'#228b22' }}
-                        >
-                            Pay ₹12,499
+                        <Typography variant="h6" fontWeight="bold" mb={2}>Price Details</Typography>
+                        <Typography>Box Charges: ₹{boxData?.Box?.pricePerHour} x {totalHours}</Typography>
+                        <Typography>Platform Fees: ₹10</Typography>
+                        <Typography variant="h6" fontWeight="bold" mt={2}>Total Amount: ₹{totalAmount}</Typography>
+                        <Button variant="contained" color="primary" fullWidth sx={{ mt: 2, background: '#228b22' }} onClick={handleSubmit}>
+                            Pay ₹{totalAmount}
                         </Button>
-
-                        <Typography
-                            sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}
-                            color="text.secondary"
-                        >
-                            🔒 100% Secure Payment
-                        </Typography>
                     </Card>
-
-                    {/* Additional Info */}
-                    <Grid  sx={{ mt: 3,display:'flex',gap:'20px' }}>
-                        <Grid item xs={12} md={4}>
-                            <Card sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                                <Typography variant="h5" sx={{ color: '#4CAF50' }}><FaRupeeSign/></Typography>
-                                <Typography fontWeight="bold">Price Guarantee</Typography>
-                                <Typography variant="caption" textAlign="center">
-                                    You're getting the best price available
-                                </Typography>
-                            </Card>
-                        </Grid>
-
-                        <Grid item xs={12} md={4}>
-                            <Card sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                                <Typography variant="h5" sx={{ color: '#2196F3' }}><BsFillTelephoneFill/></Typography>
-                                <Typography fontWeight="bold">24/7 Support</Typography>
-                                <Typography variant="caption" textAlign="center">
-                                    Get help anytime via chat or call
-                                </Typography>
-                            </Card>
-                        </Grid>
-                    </Grid>
-
                 </Grid>
             </Grid>
         </Container>

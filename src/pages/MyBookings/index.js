@@ -3,28 +3,35 @@ import Footer from "../../common/Footer"
 import Header from "../../common/Header"
 import MyBookings from "../../components/MyBooking"
 import Loader from "../../common/Loader";
+import { GET_CONFIRM_BOOKING } from "../../Api/get";
 
 const MyBookingPage = () =>{
-      const [loading, setLoading] = useState(true);
+        const [loading, setLoading] = useState(true);
+        const [boxesData, setBoxesData] = useState([]);
     
+        // Combined Effect for Loading and Data Fetching
         useEffect(() => {
-            // Simulate loading delay (e.g., API call, data fetching)
-            const timer = setTimeout(() => {
-                setLoading(false);
-            }, 1500); // 1.5s for better user experience
+            const fetchData = async () => {
+                try {
+                    const res = await GET_CONFIRM_BOOKING();
+                    setBoxesData(res.data.bookings); // Assuming data structure matches
+                    
+                } catch (error) {
+                    console.error('Error fetching boxes:', error);
+                } finally {
+                    setLoading(false);
+                }
+            };
     
-            return () => clearTimeout(timer); // Clean up the timer
+            fetchData();
         }, []);
     
-        if (loading) {
-            return (
-                <Loader/>
-            );
-        }
+        if (loading) return <Loader />;
+        
     return(
         <>
         <Header/>
-        <MyBookings/>
+        <MyBookings boxesData={boxesData}/>
         <Footer/>
         </>
     )

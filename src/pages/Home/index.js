@@ -9,30 +9,35 @@ import Testimonials from "../../components/Testimonial";
 import WhyChooseBooking4U from "../../components/WhyChooseBooking4U";
 import WhyChooseUs from "../../components/WhyChooseUs";
 import Loader from "../../common/Loader";
+import { GET_ALL_BOX } from "../../Api/get";
 
 const Home = () => {
     const [loading, setLoading] = useState(true);
+    const [boxesData, setBoxesData] = useState([]);
 
+    // Combined Effect for Loading and Data Fetching
     useEffect(() => {
-        // Simulate loading delay (e.g., API call, data fetching)
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 1500); // 1.5s for better user experience
+        const fetchData = async () => {
+            try {
+                const res = await GET_ALL_BOX();
+                setBoxesData(res.data); // Assuming data structure matches
+            } catch (error) {
+                console.error('Error fetching boxes:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        return () => clearTimeout(timer); // Clean up the timer
+        fetchData();
     }, []);
 
-    if (loading) {
-        return (
-            <Loader/>
-        );
-    }
+    if (loading) return <Loader />;
 
     return (
         <>
             <Header />
             <Banner />
-            <PopularCricket />
+            <PopularCricket boxesData={boxesData} />
             <WhyChooseUs />
             <WhyChooseBooking4U />
             <Testimonials />

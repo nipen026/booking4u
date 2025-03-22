@@ -1,50 +1,42 @@
 import React, { useState } from 'react';
 import {
-    Box, Typography, Button, Card, CardContent, Grid, Chip, TextField, Tab, Tabs, Pagination
+    Box, Typography, Button, Card, CardContent, Grid, Chip, TextField, Dialog,
+    DialogTitle, DialogContent, DialogActions, Backdrop, CircularProgress
 } from '@mui/material';
+import { FaCalendarAlt } from 'react-icons/fa';
+import dayjs from 'dayjs';
+import { CANCEL_BOOKING } from '../../Api/post';
 
-const bookingsData = [
-    {
-        hotel: 'Grand Plaza Hotel',
-        checkIn: 'Dec 15, 2023',
-        checkOut: 'Dec 20, 2023',
-        guests: '2 Adults',
-        roomType: 'Deluxe Ocean View',
-        bookingRef: 'BOK789012',
-        status: 'Confirmed',
-    },
-    {
-        hotel: 'Mountain Resort & Spa',
-        checkIn: 'Jan 5, 2024',
-        checkOut: 'Jan 8, 2024',
-        guests: '4 Adults',
-        roomType: 'Family Suite',
-        bookingRef: 'BOK789013',
-        status: 'Confirmed',
-    },
-    {
-        hotel: 'City Lights Hotel',
-        checkIn: 'Nov 20, 2023',
-        checkOut: 'Nov 22, 2023',
-        guests: '2 Adults',
-        roomType: 'Executive Suite',
-        bookingRef: 'BOK789014',
-        status: 'Completed',
-    },
-];
-
-const MyBookings = () => {
+const MyBookings = ({ boxesData }) => {
     const [search, setSearch] = useState('');
-    const [tabValue, setTabValue] = useState(0);
-    const [page, setPage] = useState(1);
+    const [openDialog, setOpenDialog] = useState(false);
+    const [selectedBookingId, setSelectedBookingId] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-    const handleTabChange = (event, newValue) => setTabValue(newValue);
     const handleSearchChange = (e) => setSearch(e.target.value);
-    const handlePageChange = (event, value) => setPage(value);
 
-    const filteredBookings = bookingsData.filter(booking =>
-        booking.hotel.toLowerCase().includes(search.toLowerCase())
-    );
+    const handleCancelClick = (bookingId) => {
+        setSelectedBookingId(bookingId);
+        setOpenDialog(true);
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        setSelectedBookingId(null);
+    };
+
+    const handleConfirmCancel = async () => {
+        setLoading(true); // Start loading
+        try {
+            await CANCEL_BOOKING(selectedBookingId);
+            window.location.reload();
+        } catch (error) {
+            console.error("Error cancelling booking:", error);
+        } finally {
+            setLoading(false); // Stop loading
+            handleCloseDialog();
+        }
+    };
 
     return (
         <Box sx={{ maxWidth: '1400px', mx: 'auto', p: 3 }}>
@@ -55,69 +47,98 @@ const MyBookings = () => {
                 Manage your upcoming and past reservations
             </Typography>
 
-            {/* Tabs */}
-            
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <TextField
+                    variant="outlined"
+                    placeholder="Search bookings..."
+                    value={search}
+                    onChange={handleSearchChange}
+                    sx={{ mb: 3, width: '300px', textAlign: 'right' }}
+                />
+            </Box>
 
-            {/* Search */}
-        <Box sx={{display:'flex',justifyContent:'flex-end'}}> 
-        <TextField
-                variant="outlined"
-                placeholder="Search bookings..."
-                value={search}
-                onChange={handleSearchChange}
-                sx={{ mb: 3,width:'300px',textAlign:'right' }}
-            />
-        </Box>
+            {boxesData.length === 0 ? (
+                <Box sx={{ textAlign: 'center', mt: 5 }}>
+                    <img src="/assets/images/not-booked.png" alt="No Bookings"
+                        style={{ width: '250px', marginBottom: '20px' }} />
+                    <Typography variant="h6" fontWeight="bold">
+                        No Bookings Yet
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Your upcoming bookings will appear here.
+                    </Typography>
+                </Box>
+            ) : (
+                boxesData.map((booking, index) => (
+                    <Card key={index} sx={{ mb: 2 }}>
+                        <CardContent>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12}>
+                                    <Typography variant="h6" fontWeight="bold">
+                                        {booking.Box.name}
+                                    </Typography>
+                                    <Typography sx={{ display: 'flex', gap: '10px', alignItems: 'center', mt: 1 }}>
+                                        <FaCalendarAlt />
+                                        Check-in: {dayjs(booking.Slot.date).format("DD MMM YYYY")}
+                                        <span style={{ fontWeight: 'bold' }}>{dayjs(booking.Slot.startTime, "HH:mm:ss").format("hh:mm A")}</span>
+                                    </Typography>
 
-            {/* Booking Cards */}
-            {filteredBookings.map((booking, index) => (
-                <Card key={index} sx={{ mb: 2 }}>
-                    <CardContent>
-                        <Grid spacing={2}>
-                            <Grid item xs={12} sm={9}>
-                                <Typography variant="h6" fontWeight="bold" sx={{ textAlign: 'left' }}>
-                                    {booking.hotel}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'left' }}>
-                                    Check-in: {booking.checkIn} | Check-out: {booking.checkOut}
-                                </Typography>
-                                <Typography variant="body2" sx={{ textAlign: 'left' }}>
-                                    Guests: {booking.guests} | Room Type: {booking.roomType}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'left' }}>
-                                    Booking reference: {booking.bookingRef}
-                                </Typography>
+                                    <Typography sx={{ display: 'flex', gap: '10px', alignItems: 'center', mt: 1 }}>
+                                        <FaCalendarAlt />
+                                        Check-out: {dayjs(booking.Slot.date).format("DD MMM YYYY")}
+                                        <span style={{ fontWeight: 'bold' }}>{dayjs(booking.Slot.endTime, "HH:mm:ss").add(1, "hour").format("hh:mm A")}</span>
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" mt={2}>
+                                        Booking reference: {booking.id}
+                                    </Typography>
+                                </Grid>
+
+                                <Grid item xs={12} display="flex" alignItems="center" justifyContent="flex-end" gap={1}>
+                                    <Chip
+                                        label={booking.status}
+                                        sx={{
+                                            backgroundColor: booking.status === 'Confirmed' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                            color: booking.status === 'Confirmed' ? 'green' : 'red',
+                                            fontWeight: 'bold',
+                                            borderRadius: '6px'
+                                        }}
+                                    />
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        onClick={() => handleCancelClick(booking.id)}
+                                        disabled={loading}
+                                    >
+                                        Cancel Booking
+                                    </Button>
+                                </Grid>
                             </Grid>
+                        </CardContent>
+                    </Card>
+                ))
+            )}
 
-                            <Grid item xs={12} sm={3} display="flex" alignItems="center" justifyContent="flex-end" gap={1} mt={2}>
-                                <Chip
-                                    label={booking.status}
-                                    sx={{
-                                        backgroundColor: booking.status === 'Confirmed'
-                                            ? 'rgba(34, 197, 94, 0.1)' // Green for Confirmed
-                                            : booking.status === 'Completed'
-                                                ? 'rgba(0, 0, 0, 0.1)'     // Grey for Completed
-                                                : 'rgba(239, 68, 68, 0.1)', // Red for other statuses (e.g., Canceled)
-                                        color: booking.status === 'Confirmed'
-                                            ? 'green'
-                                            : booking.status === 'Completed'
-                                                ? '#4B5563'                // Dark grey text for Completed
-                                                : 'red',                   // Red text for other statuses
-                                        fontWeight: 'bold',
-                                        borderRadius: '6px'
-                                    }}
-                                />
-                                <Button variant="outlined" sx={{borderColor:'#22C55E',color:'#22C55E'}}>View Details</Button>
-                                <Button variant="contained" sx={{ backgroundColor: '#22C55E' }}>
-                                    Modify Booking
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </CardContent>
-                </Card>
-            ))}
+            <Dialog open={openDialog} onClose={handleCloseDialog}>
+                <DialogTitle>Cancel Booking</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Are you sure you want to cancel this booking?
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary" disabled={loading}>
+                        No
+                    </Button>
+                    <Button onClick={handleConfirmCancel} color="error" disabled={loading}>
+                        {loading ? "Cancelling..." : "Yes, Cancel"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
-
+            {/* Global Loader */}
+            <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
         </Box>
     );
 };
