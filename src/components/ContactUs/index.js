@@ -43,7 +43,6 @@ const ContactUs = () => {
         setLoading(true); // Start loading
         try {
             const res = await CONTACT_US(formData);
-            console.log(res);
             setFormData({ name: "", company: "", message: "", phone: "" }); // Reset form
             navigate("/");
         } catch (err) {

@@ -41,7 +41,6 @@ const fetchSlotData = async (date) => {
     
     try {
         const res = await GET_SLOTS(location.state,date);
-        console.log(res);
         setSlotData(res.data.slot)
     } catch (error) {
         console.error('Error fetching boxes:', error);

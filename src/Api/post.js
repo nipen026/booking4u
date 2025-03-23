@@ -11,7 +11,6 @@ export const ADD_BOX = async (data) => {
     try {
         // Decode token
         const decodedToken = jwtDecode(adminToken);
-        console.log("Decoded Token:", decodedToken); // Debugging
 
         // Check if the role is admin
         if (decodedToken.role !== "admin") {
@@ -43,7 +42,6 @@ export const UPDATE_BOX = async (id, data) => {
     try {
         // Decode token
         const decodedToken = jwtDecode(adminToken);
-        console.log("Decoded Token:", decodedToken); // Debugging
 
         // Check if the role is admin
         if (decodedToken.role !== "admin") {

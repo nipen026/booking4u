@@ -56,7 +56,6 @@ export default function Venues({boxesData}) {
                 const response = await GET_BOX_FILTER(params)
                 // setFilteredData(response.data);
                 setFilterData(response?.boxes)
-                console.log(response);
                 
             } catch (error) {
                 console.error(error);
@@ -124,7 +123,6 @@ export default function Venues({boxesData}) {
                     }}
                 >
                     {filterData.map((venue, index) => {
-                        console.log(venue);
                         
                         return(
                             <VenueCard key={index} venue={venue} />

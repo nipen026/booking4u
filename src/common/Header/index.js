@@ -32,6 +32,7 @@ const Header = () => {
 
     if (token && userRole === "admin") {
         navLinks.push({ label: "My Boxes", path: "/myBox" });
+        navLinks.push({ label: "Admin Bookings", path: "/admin-booking" });
     }
 
     const handleMenuClick = (event) => setAnchorEl(event.currentTarget);

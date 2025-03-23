@@ -61,9 +61,7 @@ const Register = () => {
         e.preventDefault();
         if (validate()) {
             const { confirm_password, ...submitData } = formData; // Exclude confirm_password from submission
-            console.log('Submitted Data:', submitData);
             REGISTER(submitData).then((res) => {
-                console.log(res);
                 if (res.status === 201) {
                     toast.success('Register Successfully');
                     navigate('/login')

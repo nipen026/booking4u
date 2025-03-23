@@ -58,7 +58,6 @@ const Profile = () => {
     const updateUser =  () =>{
         
         UPDATE_USER(profileId,profile).then((res)=>{
-            console.log(res);
             toast.success('Successfully Updated')
             getUser();
         }).catch((err)=>{

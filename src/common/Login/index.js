@@ -39,7 +39,6 @@ const Login = () => {
         e.preventDefault();
         if (validate()) {
             LOGIN(formData).then((res) => {
-                console.log(res);
                 if (res.data.status) {
                     toast.success('Login Successfully');
                     localStorage.setItem('access-token', res.data.token)
@@ -48,7 +47,6 @@ const Login = () => {
             }).catch((err) => {
                 console.log(err);
             })
-            console.log('Login Data:', formData);
         }
     };
 

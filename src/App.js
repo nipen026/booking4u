@@ -14,6 +14,7 @@ import VenuePage from './pages/VenuePage';
 import MyBox from './pages/MyBox';
 import MySlots from './pages/MySlots';
 import ProtectedRoute from './common/ProtecedRoute';
+import AdminBookingPage from './pages/AdminBookingPage';
 function App() {
   return (
     <div className="App">
@@ -33,6 +34,9 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path='/slots/:id' element={<MySlots />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route path='/admin-booking' element={<AdminBookingPage />} />
           </Route>
 
         </Routes>

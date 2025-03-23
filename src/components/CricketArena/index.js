@@ -62,7 +62,7 @@ const CricketArena = ({ boxesData }) => {
             <Container maxWidth={'xl'}>
                 <Box display="flex" alignItems="center" gap={1} sx={{ mt: 1 }}>
                     <LocationOn sx={{ color: 'forestgreen' }} />
-                    <Typography variant="body" sx={{ fontWeight: '500' }}>{boxesData?.location}</Typography>
+                    <Typography variant="body" sx={{ fontWeight: '500' }}>{boxesData?.landmark}</Typography>
                 </Box>
 
                 <Box display="flex" alignItems="center" gap={1} sx={{ mt: 1 }}>
@@ -74,7 +74,7 @@ const CricketArena = ({ boxesData }) => {
                 <Grid container spacing={2} sx={{ mt: 3, alignItems: 'center' }}>
                     <Grid item xs={12} sm={4}>
                         <Card sx={{ textAlign: 'center', p: 2 }}>
-                            <Typography variant="h6" sx={{ color: 'forestgreen', fontWeight: '600' }}>₹{boxesData.discountPrice}/hour</Typography>
+                            <Typography variant="h6" sx={{ color: 'forestgreen', fontWeight: '600' }}>₹{boxesData.discountPrice ? boxesData.discountPrice : boxesData.pricePerHour }/hour {boxesData.discountPrice ? <del style={{fontSize:'14px',color:'#d7d7d7',margin:'0px 0px 0px 10px'}}>₹{boxesData.pricePerHour} / hr</del> : ''}</Typography>
                             <Typography variant="body2" sx={{ fontWeight: '500' }}>Best rates in the city</Typography>
                         </Card>
                     </Grid>

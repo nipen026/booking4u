@@ -25,7 +25,7 @@ const Payment = ({ boxData }) => {
     const startTime = dayjs(boxData.Slot.startTime, "HH:mm:ss");
     const endTime = dayjs(boxData.Slot.endTime, "HH:mm:ss").add(1, "hour");
     const totalHours = endTime.diff(startTime, "hour");
-    const totalAmount = totalHours * boxData?.Box?.pricePerHour + 10;
+    const totalAmount = boxData?.Box?.discountPrice ? totalHours * boxData?.Box?.discountPrice + 10 : totalHours * boxData?.Box?.pricePerHour + 10;
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -54,70 +54,84 @@ const Payment = ({ boxData }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
-
+    
         setLoading(true); // Start loading
-
+    
         try {
             const paymentData = {
                 ...formData,
                 bookingId: boxData.id,
                 amount: totalAmount,
             };
-
-            const orderResponse = await ADD_PAYMENT(paymentData);
-            if (!orderResponse || !orderResponse.data) {
-                throw new Error("Failed to create order");
-            }
-
-            const order = orderResponse.data.data;
-
-            const options = {
-                key: "rzp_test_OQTPNvPZpoAUvm",
-                amount: order.amount,
-                currency: order.currency,
-                name: boxData?.Box?.name,
-                description: "booking4u.in",
-                order_id: order.id,
-                handler: async function (response) {
-                    try {
-                        const verifyData = {
-                            order_id: order.id,
-                            payment_id: response.razorpay_payment_id,
-                            signature: response.razorpay_signature,
-                            bookingId: boxData.id,
-                        };
-
-                        const verifyRes = await VERIFY_PAYMENT(verifyData);
-                        if (verifyRes.data.status) {
-                            navigate('/bookings');
-                        } else {
-                            console.log("❌ Payment Failed!");
+    
+            if (formData.paymentType === "Prepaid") {
+                // Prepaid Payment - Use Razorpay
+                const orderResponse = await ADD_PAYMENT(paymentData);
+                if (!orderResponse || !orderResponse.data) {
+                    throw new Error("Failed to create order");
+                }
+    
+                const order = orderResponse.data.data;
+    
+                const options = {
+                    key: "rzp_test_OQTPNvPZpoAUvm",
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: boxData?.Box?.name,
+                    description: "booking4u.in",
+                    order_id: order.id,
+                    handler: async function (response) {
+                        try {
+                            const verifyData = {
+                                order_id: order.id,
+                                payment_id: response.razorpay_payment_id,
+                                signature: response.razorpay_signature,
+                                bookingId: boxData.id,
+                            };
+    
+                            const verifyRes = await VERIFY_PAYMENT(verifyData);
+                            if (verifyRes.data.status) {
+                                navigate('/bookings');
+                            } else {
+                                console.log("❌ Payment Failed!");
+                            }
+                        } catch (error) {
+                            console.error("Verification Error:", error);
+                            // alert("Payment verification failed! Please try again.");
+                        } finally {
+                            setLoading(false); // Stop loading
                         }
-                    } catch (error) {
-                        console.error("Verification Error:", error);
-                        alert("Payment verification failed! Please try again.");
-                    } finally {
-                        setLoading(false); // Stop loading
-                    }
-                },
-                prefill: {
-                    name: formData.name,
-                    email: formData.email,
-                    contact: formData.phone,
-                },
-                theme: {
-                    color: "#228b22",
-                },
-            };
-
-            const razor = new window.Razorpay(options);
-            razor.open();
+                    },
+                    prefill: {
+                        name: formData.name,
+                        email: formData.email,
+                        contact: formData.phone,
+                    },
+                    theme: {
+                        color: "#228b22",
+                    },
+                };
+    
+                const razor = new window.Razorpay(options);
+                razor.open();
+            } else {
+                // Non-Prepaid Payment - Just Save Booking
+                const response = await ADD_PAYMENT(paymentData);
+                if (response.data.status) {
+                    // alert("✅ Booking successful!");
+                    navigate('/bookings');
+                } else {
+                    console.log("❌ Booking failed!");
+                }
+                setLoading(false);
+            }
         } catch (error) {
             console.error("Payment Error:", error);
-            alert("❌ Payment failed! Please try again.");
-            setLoading(false); // Stop loading
+            // alert("❌ Payment failed! Please try again.");
+            setLoading(false);
         }
     };
+    
 
     return (
         <Container maxWidth="xl" sx={{ py: 4 }}>

@@ -50,6 +50,8 @@ const SlotsManagement = () => {
         startTime: '',
         endTime: '',
         date: '',
+        firstname: '',
+        lastname: ''
     });
     const [edit, setEdit] = useState(false);
     const [filterDate, setFilterDate] = useState('');
@@ -83,7 +85,6 @@ const SlotsManagement = () => {
     };
     const [errors, setErrors] = useState({});
     const location = useLocation();
-    console.log(location);
 
     // Handle Input Changes
     const handleChange = (e) => {
@@ -100,6 +101,8 @@ const SlotsManagement = () => {
         if (!formData.startTime) newErrors.startTime = 'Start Time is required';
         if (!formData.endTime) newErrors.endTime = 'End Time is required';
         if (!formData.date) newErrors.date = 'Date is required';
+        if (!formData.firstname) newErrors.firstname = 'First name is required';
+        if (!formData.lastname) newErrors.lastname = 'Last name is required';
 
         // Time Validation
         const startIndex = timeSlots.indexOf(formData.startTime);
@@ -121,8 +124,6 @@ const SlotsManagement = () => {
         if (edit) {
 
             UPDATE_SLOT(formData.id, formData).then((res) => {
-                console.log(res);
-                // window.location.reload()
                 toast.success('Update Successfully')
                 getSlotData();
             }).catch((err) => {
@@ -131,7 +132,6 @@ const SlotsManagement = () => {
             })
         } else {
             ADD_SLOT(formData).then((res) => {
-                console.log(res);
                 getSlotData()
             }).catch((err) => {
                 console.log(err);
@@ -154,9 +154,7 @@ const SlotsManagement = () => {
         setSlotsData(updatedSlots);
     };
     useEffect(() => {
-        // console.log();
         GET_BOX_BY_USER().then((res) => {
-            console.log(res);
             setBoxesData(res.data.boxes)
         }).catch((err) => {
             console.log(err);
@@ -166,7 +164,6 @@ const SlotsManagement = () => {
     const getSlotData = () => {
         const id = location.pathname.split('/')[2]
         GET_SLOTS_BY_BOX(id).then((res) => {
-            console.log(res);
             setSlotsData(res.data)
         }).catch((err) => {
             console.log(err);
@@ -192,26 +189,26 @@ const SlotsManagement = () => {
             <Box>
                 <Toaster />
                 {/* Add Slot Button */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems:'center' }}>
-                <Box >
-                    <Button
-                        variant="contained"
-                        onClick={() => setOpenPopup(true)}
-                        sx={{ my: 2, background: 'forestgreen' }}
-                    >
-                        Add Slot
-                    </Button>
-                </Box>
-                <Box>
-                    <TextField
-                        fullWidth
-                        label="Filter by Date"
-                        type="date"
-                        value={filterDate}
-                        onChange={handleFilterDateChange}
-                        InputLabelProps={{ shrink: true }}
-                    />
-                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box >
+                        <Button
+                            variant="contained"
+                            onClick={() => setOpenPopup(true)}
+                            sx={{ my: 2, background: 'forestgreen' }}
+                        >
+                            Add Slot
+                        </Button>
+                    </Box>
+                    <Box>
+                        <TextField
+                            fullWidth
+                            label="Filter by Date"
+                            type="date"
+                            value={filterDate}
+                            onChange={handleFilterDateChange}
+                            InputLabelProps={{ shrink: true }}
+                        />
+                    </Box>
                 </Box>
 
                 {/* Table for Slots Data */}
@@ -221,6 +218,8 @@ const SlotsManagement = () => {
                             <TableRow>
                                 <TableCell>Slot ID</TableCell>
                                 <TableCell>Box ID</TableCell>
+                                <TableCell>First Name</TableCell>
+                                <TableCell>Last Name</TableCell>
                                 <TableCell>Start Time</TableCell>
                                 <TableCell>End Time</TableCell>
                                 <TableCell>Date</TableCell>
@@ -234,6 +233,8 @@ const SlotsManagement = () => {
                                 <TableRow key={index}>
                                     <TableCell>{slot.id}</TableCell>
                                     <TableCell>{slot.boxId}</TableCell>
+                                    <TableCell>{slot.firstname}</TableCell>
+                                    <TableCell>{slot.lastname}</TableCell>
                                     <TableCell>{formatTimeTo12Hour(slot.startTime)}</TableCell>
                                     <TableCell>{formatTimeTo12Hour(slot.endTime)}</TableCell>
                                     <TableCell>{slot.date}</TableCell>
@@ -264,8 +265,12 @@ const SlotsManagement = () => {
                     <DialogTitle>{edit ? 'Update Slot' : 'Add Slot'}</DialogTitle>
                     <DialogContent>
                         <Grid container spacing={2} sx={{ mt: 1 }}>
-
-
+                            <Grid item xs={6}>
+                                <TextField fullWidth label="First Name" name="firstname" value={formData.firstname} onChange={handleChange} error={!!errors.firstname} helperText={errors.firstname} />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField fullWidth label="Last Name" name="lastname" value={formData.lastname} onChange={handleChange} error={!!errors.lastname} helperText={errors.lastname} />
+                            </Grid>
                             <Grid item xs={12}>
                                 <FormControl fullWidth error={!!errors.startTime}>
                                     <InputLabel>Box</InputLabel>

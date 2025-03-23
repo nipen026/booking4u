@@ -55,7 +55,6 @@ const BookingSlots = ({ setGetSelectDate, slotData, boxesData }) => {
 
         if (bookingDetails.startTime && bookingDetails.endTime && bookingDetails.date) {
             ADD_BOOKING(bookingDetails).then((res) => {
-                console.log(res);
                 if (res.data.status) {
                     navigate(`/payment/${res.data.newBooking?.id}`)
                 }
@@ -64,7 +63,6 @@ const BookingSlots = ({ setGetSelectDate, slotData, boxesData }) => {
             })
         }
     };
-    const googleMapEmbedUrl = boxesData.googleMapLink.replace("maps.app.goo.gl", "www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=");
 
 
     return (

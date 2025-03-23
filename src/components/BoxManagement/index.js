@@ -93,20 +93,9 @@ const BoxManagement = () => {
 
     // Handle Image Upload
     const handleImageUpload = (e) => {
-        const files = e.target.files;
+        const files = Array.from(e.target.files); // Convert FileList to array
         if (files.length > 0) {
-            const imageArray = [];
-
-            Array.from(files).forEach((file) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onloadend = () => {
-                    imageArray.push(reader.result);
-                    if (imageArray.length === files.length) {
-                        setFormData((prev) => ({ ...prev, images: imageArray }));
-                    }
-                };
-            });
+            setFormData((prev) => ({ ...prev, images: [...prev.images, ...files] }));
         }
     };
 
@@ -140,7 +129,6 @@ const BoxManagement = () => {
 
             UPDATE_BOX(editDataId, formData)
                 .then((res) => {
-                    console.log(res);
                     toast.success('Update Successfully');
                     getBoxByUser()
                 })
@@ -150,7 +138,6 @@ const BoxManagement = () => {
         } else {
             ADD_BOX(boxData)
                 .then((res) => {
-                    console.log(res);
                     toast.success('Added Successfully');
                     getBoxByUser();
                 })
@@ -192,7 +179,6 @@ const BoxManagement = () => {
     }, [])
     const getBoxByUser = () => {
         GET_BOX_BY_USER().then((res) => {
-            console.log(res);
             setBoxesData(res.data.boxes);
 
         }).catch((err) => {
@@ -200,7 +186,6 @@ const BoxManagement = () => {
         })
     }
     const handleUpdate = (box) => {
-        console.log(box);
         setEditDataId(box.id)
         setFormData(box);
         setOpen(true);
@@ -244,7 +229,7 @@ const BoxManagement = () => {
                                         {box.location}
                                     </Typography>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', mt: 1 }}>
-                                        {box.facilities.map((item, index) => {
+                                        {box?.facilities.map((item, index) => {
                                             return (
                                                 <Typography variant="body2" sx={{ fontWeight: '700' }} color="text.secondary">
                                                     {item}
@@ -345,17 +330,36 @@ const BoxManagement = () => {
                         <TextField label="State" name="state" fullWidth margin="dense" defaultValue={formData.state} onChange={handleChange} />
                         <TextField label="City" name="city" fullWidth margin="dense" defaultValue={formData.city} onChange={handleChange} />
                         {/* File Upload */}
-                        {edit ? '' :
+                        {edit ? '' : (
                             <>
                                 <Button variant="contained" component="label" sx={{ mt: 2 }}>
                                     Upload Images
-                                    <input type="file" multiple hidden accept="image/*" onChange={handleImageUpload} />
+                                    <input
+                                        type="file"
+                                        multiple
+                                        hidden
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                    />
                                 </Button>
+
+                                {/* Display Image Previews Directly from Files */}
                                 <Box sx={{ mt: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
-                                    {formData.images.map((img, index) => (
-                                        <img key={index} src={`${process.env.REACT_APP_BASE_URL}${img}`} alt={`preview-${index}`} width="80" height="80" style={{ borderRadius: 8 }} />
+                                    {formData.images.map((file, index) => (
+                                        <Box key={index} sx={{ position: "relative", display: "inline-block" }}>
+                                            <img
+                                                src={URL.createObjectURL(file)}
+                                                alt={`preview-${index}`}
+                                                width="80"
+                                                height="80"
+                                                style={{ borderRadius: 8,objectFit:'cover' }}
+                                            />
+                                        </Box>
                                     ))}
-                                </Box></>}
+                                </Box>
+                            </>
+                        )}
+
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={handleClose} color="error">

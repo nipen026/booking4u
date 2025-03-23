@@ -38,7 +38,6 @@ export const GET_BOX_BY_USER = async () => {
     try {
         // Decode token
         const decodedToken = jwtDecode(adminToken);
-        console.log("Decoded Token:", decodedToken); // Debugging
 
         // Check if the role is admin
         if (decodedToken.role !== "admin") {
@@ -135,7 +134,21 @@ export const GET_BOX_FILTER = async (query) => {
 
         return response.data; // Return only response data
     } catch (error) {
-        console.error('Error fetching filtered boxes:', error);
+        throw error; // Ensure the error propagates
+    }
+};
+export const GET_ALL_ADMIN_BOOKING = async () => {
+    const token = localStorage.getItem('access-token');
+
+    try {
+        const response = await axios.get(`${base_url}/api/bookings/getAllBookingsForAdmin`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data; // Return only response data
+    } catch (error) {
         throw error; // Ensure the error propagates
     }
 };
