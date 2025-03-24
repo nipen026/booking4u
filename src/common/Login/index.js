@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { TextField, Button, Container, Typography, Box, Card } from '@mui/material';
+import {
+    TextField,
+    Button,
+    Container,
+    Typography,
+    Box,
+    Card,
+    IconButton,
+    InputAdornment
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { LOGIN } from '../../Api/post';
 import toast, { Toaster } from 'react-hot-toast';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -9,14 +19,19 @@ const Login = () => {
         email: '',
         password: '',
     });
-
+    const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
     const location = useLocation();
     const from = location.state?.from?.pathname || '/'; // Default to home if no previous page
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const togglePasswordVisibility = () => {
+        setShowPassword((prev) => !prev);
     };
 
     const validate = () => {
@@ -38,15 +53,17 @@ const Login = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (validate()) {
-            LOGIN(formData).then((res) => {
-                if (res.data.status) {
-                    toast.success('Login Successfully');
-                    localStorage.setItem('access-token', res.data.token)
-                    navigate(from, { replace: true });
-                }
-            }).catch((err) => {
-                console.log(err);
-            })
+            LOGIN(formData)
+                .then((res) => {
+                    if (res.data.status) {
+                        toast.success('Login Successfully');
+                        localStorage.setItem('access-token', res.data.token);
+                        navigate(from, { replace: true });
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
         }
     };
 
@@ -74,13 +91,22 @@ const Login = () => {
                         <TextField
                             fullWidth
                             label="Password"
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
                             error={!!errors.password}
                             helperText={errors.password}
                             margin="normal"
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton onClick={togglePasswordVisibility} edge="end">
+                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }}
                         />
 
                         <Button
