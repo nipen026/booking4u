@@ -51,7 +51,8 @@ const SlotsManagement = () => {
         endTime: '',
         date: '',
         firstname: '',
-        lastname: ''
+        lastname: '',
+        price:''
     });
     const [edit, setEdit] = useState(false);
     const [filterDate, setFilterDate] = useState('');
@@ -103,6 +104,7 @@ const SlotsManagement = () => {
         if (!formData.date) newErrors.date = 'Date is required';
         if (!formData.firstname) newErrors.firstname = 'First name is required';
         if (!formData.lastname) newErrors.lastname = 'Last name is required';
+        if (!formData.price) newErrors.price = 'Last name is required';
 
         // Time Validation
         const startIndex = timeSlots.indexOf(formData.startTime);
@@ -223,6 +225,7 @@ const SlotsManagement = () => {
                                 <TableCell>Start Time</TableCell>
                                 <TableCell>End Time</TableCell>
                                 <TableCell>Date</TableCell>
+                                <TableCell>Price</TableCell>
                                 <TableCell>Status</TableCell>
                                 <TableCell>Actions</TableCell>
                             </TableRow>
@@ -238,6 +241,7 @@ const SlotsManagement = () => {
                                     <TableCell>{formatTimeTo12Hour(slot.startTime)}</TableCell>
                                     <TableCell>{formatTimeTo12Hour(slot.endTime)}</TableCell>
                                     <TableCell>{slot.date}</TableCell>
+                                    <TableCell>{slot.price ? slot.price : ''}</TableCell>
                                     <TableCell>{slot.status}</TableCell>
                                     <TableCell>
                                         <Tooltip title="Edit">
@@ -288,7 +292,9 @@ const SlotsManagement = () => {
                                     <FormHelperText>{errors.startTime}</FormHelperText>
                                 </FormControl>
                             </Grid>
-
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Price" name="price" value={formData.price} onChange={handleChange} error={!!errors.price} helperText={errors.price} />
+                            </Grid>
                             {/* Start Time Dropdown */}
                             <Grid item xs={6}>
                                 <FormControl fullWidth error={!!errors.startTime}>

@@ -37,8 +37,8 @@ const CricketArena = ({ boxesData }) => {
         autoplaySpeed: 1000,
         arrows: false
     };
-    const filteredFeatures = features.filter(feature =>
-        boxesData.facilities.includes(feature.key)
+    const filteredFeatures = features?.filter(feature =>
+        boxesData?.facilities?.includes(feature?.key)
     );
     return (
         <Box sx={{ p: 3, backgroundColor: '#f9fafb', borderRadius: 3, boxShadow: 2 }}>
@@ -100,13 +100,13 @@ const CricketArena = ({ boxesData }) => {
                 <Typography variant="h6" fontWeight="bold" sx={{ mt: 3 }}>Facilities</Typography>
 
                 <Grid container spacing={2} sx={{ mt: 1 }}>
-                    {filteredFeatures.map((feature, index) => (
+                    {filteredFeatures?.map((feature, index) => (
                         <Grid item xs={12} sm={4} key={index}>
                             <Card sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Typography variant="h6" >{feature.icon}</Typography>
+                                <Typography variant="h6" >{feature?.icon}</Typography>
                                 <Box>
-                                    <Typography fontWeight="bold" sx={{ textAlign: 'left' }}>{feature.title}</Typography>
-                                    <Typography variant="body2" sx={{ textAlign: 'left' }}>{feature.description}</Typography>
+                                    <Typography fontWeight="bold" sx={{ textAlign: 'left' }}>{feature?.title}</Typography>
+                                    <Typography variant="body2" sx={{ textAlign: 'left' }}>{feature?.description}</Typography>
                                 </Box>
                             </Card>
                         </Grid>
