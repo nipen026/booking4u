@@ -5,6 +5,7 @@ import autoTable from "jspdf-autotable";
 import { EXPORT_BOOKING, EXPORT_PAYMENT } from "../../Api/post";
 import { useLocation } from "react-router-dom";
 import { Card, CardContent, Typography, Grid } from "@mui/material";
+import Header from "../../common/Header";
 
 
 // Function to calculate row span
@@ -114,6 +115,8 @@ const SheetViewer = () => {
         .filter((b) => b.paymentMethod === "prepaid")
         .reduce((sum, b) => sum + (b.price ? b.price - 10 : 0), 0);
     return (
+       <>
+       <Header/>
         <div style={{ padding: "20px", background: "#f5f5f5", minHeight: "100vh" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
                 <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "#333" }}>📅 Booking Schedule</h2>
@@ -337,6 +340,7 @@ const SheetViewer = () => {
             </TableContainer>
 
         </div>
+       </>
     );
 };
 
