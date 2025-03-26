@@ -15,6 +15,7 @@ import MyBox from './pages/MyBox';
 import MySlots from './pages/MySlots';
 import ProtectedRoute from './common/ProtecedRoute';
 import AdminBookingPage from './pages/AdminBookingPage';
+import SheetViewer from './components/SheetViewer';
 function App() {
   return (
     <div className="App">
@@ -29,6 +30,7 @@ function App() {
           <Route path='/myprofile' element={<MyProfile />} />
           <Route path='/contact' element={<ContactPage />} />
           <Route path='/venues' element={<VenuePage />} />
+          <Route path='/sheet' element={<SheetViewer />} />
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path='/myBox' element={<MyBox />} />
           </Route>

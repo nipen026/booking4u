@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
 import {
     Box, Typography, Button, Card, CardContent, Grid, Chip, Dialog,
-    DialogTitle, DialogContent, DialogActions, IconButton
+    DialogTitle, DialogContent, DialogActions, IconButton, TextField
 } from '@mui/material';
 import { FaEye, FaCalendarAlt } from 'react-icons/fa';
 import dayjs from 'dayjs';
+import { EXPORT_BOOKING } from '../../Api/post';
+import { saveAs } from "file-saver";
+import { useNavigate } from 'react-router-dom';
+
 
 const AdminAllBookings = ({ bookingsData }) => {
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
+    const [exportDialog, setExportDialog] = useState(false);
+    const [exportType, setExportType] = useState('');
+    const [dateRange, setDateRange] = useState({
+        startDate: '',
+        endDate: ''
+    });
+    const navigate = useNavigate()
 
     // Open Dialog with booking details
     const handleViewDetails = (booking) => {
@@ -22,11 +33,44 @@ const AdminAllBookings = ({ bookingsData }) => {
         setSelectedBooking(null);
     };
 
+    // Open Export Dialog
+    const handleOpenExportDialog = (type) => {
+        setExportType(type);
+        setExportDialog(true);
+    };
+
+    // Close Export Dialog
+    const handleCloseExportDialog = () => {
+        setExportDialog(false);
+        setDateRange({ startDate: '', endDate: '' });
+    };
+
+    // Handle Export Logic
+    const handleExport = () => {
+        const data = {
+            exportType:exportType,
+            startDate:dateRange.startDate,
+            endDate:dateRange.endDate
+        }
+        if(data.exportType && data.startDate && data.endDate){
+            navigate('/sheet',{state:data})
+        }
+        console.log(`Exporting ${exportType} from ${dateRange.startDate} to ${dateRange.endDate}`);
+        handleCloseExportDialog();
+    };  
+
     return (
         <Box sx={{ maxWidth: '1400px', mx: 'auto', p: 3 }}>
             <Typography variant="h4" fontWeight="bold" mb={2}>
                 All Bookings
             </Typography>
+
+            {/* Export Buttons */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                <Button variant="contained" sx={{background:'forestgreen',color:'white'}} onClick={() => handleOpenExportDialog('Bookings')}>
+                    Export Bookings
+                </Button>
+            </Box>
 
             {/* Booking Cards */}
             {bookingsData.length === 0 ? (
@@ -125,6 +169,39 @@ const AdminAllBookings = ({ bookingsData }) => {
                     </DialogActions>
                 </Dialog>
             )}
+
+            {/* Export Dialog */}
+            <Dialog open={exportDialog} onClose={handleCloseExportDialog} fullWidth maxWidth="sm">
+                <DialogTitle>Export {exportType}</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        label="Start Date"
+                        type="date"
+                        value={dateRange.startDate}
+                        onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
+                        sx={{ my: 2 }}
+                        InputLabelProps={{ shrink: true }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="End Date"
+                        type="date"
+                        value={dateRange.endDate}
+                        onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
+                        sx={{ my: 2 }}
+                        InputLabelProps={{ shrink: true }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseExportDialog}  sx={{border:'1px solid forestgreen',background:'white',color:'forestgreen'}}>
+                        Cancel
+                    </Button>
+                    <Button onClick={handleExport} sx={{background:'forestgreen',color:'white'}} variant="outlined">
+                        Export
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

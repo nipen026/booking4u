@@ -199,7 +199,7 @@ const Payment = ({ boxData }) => {
                             </FormLabel>
                             <RadioGroup value={formData.paymentMethod} onChange={handleChange} name="paymentMethod">
                                 <FormControlLabel value="prepaid" control={<Radio />} label="(UPI, Net Banking, Card, Credit Card)" />
-                                <FormControlLabel value="box" control={<Radio />} label="Pay on Box" />
+                                <FormControlLabel value="cash" control={<Radio />} label="Pay on Box" />
                             </RadioGroup>
                         </Box>
                     </Card>

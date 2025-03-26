@@ -92,6 +92,36 @@ export const CANCEL_BOOKING = async (id) => {
         })
     })
 }
+export const EXPORT_BOOKING = async (data) => {
+    const token = localStorage.getItem("access-token");
+
+    return await new Promise((resolve, reject) => {
+        axios.post(`${base_url}/api/sheet/bookingsData`,data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then((res) => {
+            resolve(res);
+        }).catch((err) => {
+            reject(err);
+        })
+    })
+}
+export const EXPORT_PAYMENT = async (data) => {
+    const token = localStorage.getItem("access-token");
+
+    return await new Promise((resolve, reject) => {
+        axios.post(`${base_url}/api/sheet/paymentData`,data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then((res) => {
+            resolve(res);
+        }).catch((err) => {
+            reject(err);
+        })
+    })
+}
 
 // -------------------- Do Not Change ----------------//
 
