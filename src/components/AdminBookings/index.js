@@ -5,8 +5,6 @@ import {
 } from '@mui/material';
 import { FaEye, FaCalendarAlt } from 'react-icons/fa';
 import dayjs from 'dayjs';
-import { EXPORT_BOOKING } from '../../Api/post';
-import { saveAs } from "file-saver";
 import { useNavigate } from 'react-router-dom';
 
 
@@ -47,17 +45,34 @@ const AdminAllBookings = ({ bookingsData }) => {
 
     // Handle Export Logic
     const handleExport = () => {
+        const { startDate, endDate } = dateRange;
+    
+        // Convert dates to dayjs objects for comparison
+        const start = dayjs(startDate);
+        const end = dayjs(endDate);
+    
+        // Validate that the difference is at least 3 days
+        if (!startDate || !endDate) {
+            alert("Please select both start and end dates.");
+            return;
+        }
+    
+        if (end.diff(start, 'day') < 3) {
+            alert("Please select a date range of at least 3 days.");
+            return;
+        }
+    
+        // Proceed with export if validation passes
         const data = {
-            exportType:exportType,
-            startDate:dateRange.startDate,
-            endDate:dateRange.endDate
-        }
-        if(data.exportType && data.startDate && data.endDate){
-            navigate('/sheet',{state:data})
-        }
-        console.log(`Exporting ${exportType} from ${dateRange.startDate} to ${dateRange.endDate}`);
+            exportType: exportType,
+            startDate: startDate,
+            endDate: endDate
+        };
+    
+        navigate('/sheet', { state: data });
+        console.log(`Exporting ${exportType} from ${startDate} to ${endDate}`);
         handleCloseExportDialog();
-    };  
+    }; 
 
     return (
         <Box sx={{ maxWidth: '1400px', mx: 'auto', p: 3 }}>
@@ -106,6 +121,12 @@ const AdminAllBookings = ({ bookingsData }) => {
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary" mt={1} align='left'>
                                             Booking ID: {booking?.id}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary" mt={1} align='left' sx={{textTransform:'capitalize'}}>
+                                            Payment : {booking?.payment}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary" mt={1} align='left'>
+                                            Price: {booking?.price}
                                         </Typography>
                                     </Grid>
 

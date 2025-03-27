@@ -32,6 +32,7 @@ import { useLocation } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import { ADD_SLOT, UPDATE_SLOT } from '../../Api/post';
 import { GET_BOX_BY_USER, GET_SLOTS_BY_BOX } from '../../Api/get';
+import dayjs from 'dayjs';
 
 const timeSlots = [
     '12:00 AM', '01:00 AM', '02:00 AM', '03:00 AM', '04:00 AM',
@@ -52,7 +53,10 @@ const SlotsManagement = () => {
         date: '',
         firstname: '',
         lastname: '',
-        price:''
+        price: '',
+        payment: '',
+        bookername: '',
+        type: 'manual'
     });
     const [edit, setEdit] = useState(false);
     const [filterDate, setFilterDate] = useState('');
@@ -91,32 +95,55 @@ const SlotsManagement = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+
+        // Reset start and end time when date is changed
+        if (name === 'date') {
+            setFormData({ ...formData, [name]: value, startTime: '', endTime: '' });
+        }
     };
+
 
     // Validation Function
     const validateForm = () => {
         const newErrors = {};
-
+    
         // Required Field Validation
-        if (!formData.boxId) newErrors.boxId = 'Box ID is required';
-        if (!formData.startTime) newErrors.startTime = 'Start Time is required';
-        if (!formData.endTime) newErrors.endTime = 'End Time is required';
+        if (!formData.boxId) newErrors.boxId = 'Box is required';
         if (!formData.date) newErrors.date = 'Date is required';
         if (!formData.firstname) newErrors.firstname = 'First name is required';
         if (!formData.lastname) newErrors.lastname = 'Last name is required';
-        if (!formData.price) newErrors.price = 'Last name is required';
-
-        // Time Validation
-        const startIndex = timeSlots.indexOf(formData.startTime);
-        const endIndex = timeSlots.indexOf(formData.endTime);
-
-        if (startIndex >= endIndex) {
-            newErrors.endTime = 'End Time must be later than Start Time';
+        if (!formData.price) newErrors.price = 'Price is required';
+        if (!formData.payment) newErrors.payment = 'Payment Method is required';
+        if (!formData.bookername) newErrors.bookername = 'Booker name is required';
+    
+        // Ensure Start Time and End Time are not selected if Date is empty
+        if (!formData.date) {
+            newErrors.startTime = 'Select a date first';
+            newErrors.endTime = 'Select a date first';
+        } else {
+            if (!formData.startTime) newErrors.startTime = 'Start Time is required';
+            if (!formData.endTime) newErrors.endTime = 'End Time is required';
+    
+            if (formData.startTime && formData.endTime) {
+                const startIndex = timeSlots.indexOf(formData.startTime);
+                const endIndex = timeSlots.indexOf(formData.endTime);
+    
+                // Ensure End Time is the same as Start Time
+                if (startIndex !== endIndex) {
+                    newErrors.endTime = 'End Time must be the same as Start Time';
+                }
+    
+                // Ensure End Time is not before Start Time
+                if (endIndex < startIndex) {
+                    newErrors.endTime = 'End Time cannot be earlier than Start Time';
+                }
+            }
         }
-
+    
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
+    
 
     // Handle Add Slot
     const handleAddSlot = () => {
@@ -146,6 +173,12 @@ const SlotsManagement = () => {
             startTime: '',
             endTime: '',
             date: '',
+            firstname: '',
+            lastname: '',
+            price: '',
+            payment: '',
+            bookername: '',
+            type: 'manual'
         });
         setOpenPopup(false);
     };
@@ -186,6 +219,17 @@ const SlotsManagement = () => {
         });
         setOpenPopup(true);
     };
+    const getBookedTimes = () => {
+        return slotsData
+            .filter(slot => slot.date === formData.date) // Only consider slots for selected date
+            .flatMap(slot => {
+                const startIdx = timeSlots.indexOf(formatTimeTo12Hour(slot.startTime));
+                const endIdx = timeSlots.indexOf(formatTimeTo12Hour(slot.endTime));
+                return timeSlots.slice(startIdx, endIdx); // Get all times between start and end
+            });
+    };
+    const availableTimeSlots = timeSlots.filter(time => !getBookedTimes().includes(time));
+
     return (
         <Container sx={{ my: 3 }} maxWidth={'2xl'}>
             <Box>
@@ -239,7 +283,7 @@ const SlotsManagement = () => {
                                     <TableCell>{slot.firstname}</TableCell>
                                     <TableCell>{slot.lastname}</TableCell>
                                     <TableCell>{formatTimeTo12Hour(slot.startTime)}</TableCell>
-                                    <TableCell>{formatTimeTo12Hour(slot.endTime)}</TableCell>
+                                    <TableCell>{dayjs(slot.endTime, "HH:mm:ss").add(1, "hour").format("hh:mm A")}</TableCell>
                                     <TableCell>{slot.date}</TableCell>
                                     <TableCell>{slot.price ? slot.price : ''}</TableCell>
                                     <TableCell>{slot.status}</TableCell>
@@ -276,63 +320,34 @@ const SlotsManagement = () => {
                                 <TextField fullWidth label="Last Name" name="lastname" value={formData.lastname} onChange={handleChange} error={!!errors.lastname} helperText={errors.lastname} />
                             </Grid>
                             <Grid item xs={12}>
-                                <FormControl fullWidth error={!!errors.startTime}>
+                                <TextField fullWidth label="Booker Name" name="bookername" value={formData.bookername} onChange={handleChange} error={!!errors.bookername} helperText={errors.bookername} />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <FormControl fullWidth error={!!errors.boxId}>
                                     <InputLabel>Box</InputLabel>
-                                    <Select
-                                        name="boxId"
-                                        value={formData.boxId}
-                                        onChange={handleChange}
-                                    >
-                                        {boxesData.map((time) => (
-                                            <MenuItem key={time.id} value={time.id}>
-                                                {time.name}
+                                    <Select name="boxId" value={formData.boxId} onChange={handleChange}>
+                                        {boxesData.map((box) => (
+                                            <MenuItem key={box.id} value={box.id}>
+                                                {box.name}
                                             </MenuItem>
                                         ))}
                                     </Select>
-                                    <FormHelperText>{errors.startTime}</FormHelperText>
+                                    <FormHelperText>{errors.boxId}</FormHelperText>
                                 </FormControl>
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField fullWidth label="Price" name="price" value={formData.price} onChange={handleChange} error={!!errors.price} helperText={errors.price} />
                             </Grid>
-                            {/* Start Time Dropdown */}
-                            <Grid item xs={6}>
-                                <FormControl fullWidth error={!!errors.startTime}>
-                                    <InputLabel>Start Time</InputLabel>
-                                    <Select
-                                        name="startTime"
-                                        value={formData.startTime}
-                                        onChange={handleChange}
-                                    >
-                                        {timeSlots.map((time) => (
-                                            <MenuItem key={time} value={time}>
-                                                {time}
-                                            </MenuItem>
-                                        ))}
+                            <Grid item xs={12}>
+                                <FormControl fullWidth error={!!errors.payment}>
+                                    <InputLabel>Payment Method</InputLabel>
+                                    <Select name="payment" value={formData.payment} onChange={handleChange}>
+                                        <MenuItem value="cash">Cash</MenuItem>
+                                        <MenuItem value="prepaid">UPI</MenuItem>
                                     </Select>
-                                    <FormHelperText>{errors.startTime}</FormHelperText>
+                                    <FormHelperText>{errors.payment}</FormHelperText>
                                 </FormControl>
                             </Grid>
-
-                            {/* End Time Dropdown */}
-                            <Grid item xs={6}>
-                                <FormControl fullWidth error={!!errors.endTime}>
-                                    <InputLabel>End Time</InputLabel>
-                                    <Select
-                                        name="endTime"
-                                        value={formData.endTime}
-                                        onChange={handleChange}
-                                    >
-                                        {timeSlots.map((time) => (
-                                            <MenuItem key={time} value={time}>
-                                                {time}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                    <FormHelperText>{errors.endTime}</FormHelperText>
-                                </FormControl>
-                            </Grid>
-
                             <Grid item xs={12}>
                                 <TextField
                                     fullWidth
@@ -347,7 +362,34 @@ const SlotsManagement = () => {
                                 />
                             </Grid>
 
+                            {/* Disable Start and End Time selection if no Date is selected */}
+                            <Grid item xs={6}>
+                                <FormControl fullWidth error={!!errors.startTime} disabled={!formData.date}>
+                                    <InputLabel>Start Time</InputLabel>
+                                    <Select name="startTime" value={formData.startTime} onChange={handleChange}>
+                                        {availableTimeSlots.map((time) => (
+                                            <MenuItem key={time} value={time}>
+                                                {time}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    <FormHelperText>{errors.startTime}</FormHelperText>
+                                </FormControl>
+                            </Grid>
 
+                            <Grid item xs={6}>
+                                <FormControl fullWidth error={!!errors.endTime} disabled={!formData.date}>
+                                    <InputLabel>End Time</InputLabel>
+                                    <Select name="endTime" value={formData.endTime} onChange={handleChange}>
+                                        {availableTimeSlots.map((time) => (
+                                            <MenuItem key={time} value={time}>
+                                                {time}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    <FormHelperText>{errors.endTime}</FormHelperText>
+                                </FormControl>
+                            </Grid>
                         </Grid>
                     </DialogContent>
 

@@ -12,10 +12,13 @@ import Header from "../../common/Header";
 const getRowSpan = (startTime, endTime, allSlots) => {
     let startIdx = allSlots.indexOf(startTime);
     let endIdx = allSlots.indexOf(endTime);
-    console.log(endIdx - startIdx + 1);
 
-    return endIdx - startIdx + 1; // Fix: Add +1 to include the last slot
+    if (startIdx === -1 || endIdx === -1) return 1; // Ensure valid index
+    return Math.max(1, endIdx + 1 - startIdx); // Adding +1 for correct row span
 };
+
+
+
 
 const SheetViewer = () => {
     const location = useLocation();
@@ -263,79 +266,79 @@ const SheetViewer = () => {
 
                     {/* Table Body */}
                     <TableBody>
-                        {allSlots.map((slot, slotIndex) => (
-                            <TableRow key={slotIndex}>
-                                {/* Time Slot Column */}
-                                <TableCell
-                                    align="center"
-                                    sx={{
-                                        fontWeight: "bold",
-                                        border: "1px solid #ddd",
-                                        fontSize: { xs: "12px", sm: "14px", md: "16px" }, // Responsive font size
-                                        whiteSpace: "nowrap", // Prevent wrapping
-                                        backgroundColor: "white", // Ensure background remains visible
-                                        position: "sticky",
-                                        left: 0,
-                                        zIndex: 3, // Higher than other cells
-                                        borderRight: "2px solid #ddd", // Stronger border visibility
-                                    }}
-                                >
-                                    {slot} - {allSlots[slotIndex + 1] || ""}
-                                </TableCell>
+    {allSlots.map((slot, slotIndex) => (
+        <TableRow key={slotIndex}>
+            {/* Time Slot Column */}
+            <TableCell
+                align="center"
+                sx={{
+                    fontWeight: "bold",
+                    border: "1px solid #ddd",
+                    fontSize: { xs: "12px", sm: "14px", md: "16px" }, // Responsive font size
+                    whiteSpace: "nowrap",
+                    backgroundColor: "white",
+                    position: "sticky",
+                    left: 0,
+                    zIndex: 3,
+                    borderRight: "2px solid #ddd",
+                }}
+            >
+                {slot} - {allSlots[slotIndex + 1] || ""}
+            </TableCell>
 
+            {/* Booking Data Cells */}
+            {dates.map((date) =>
+                boxDetails.map((box, boxIndex) => {
+                    let booking = bookingData.find(
+                        (b) => b.date === date && b.boxName === box.name && b.startTime === slot
+                    );
 
-                                {/* Booking Data Cells */}
-                                {dates.map((date) =>
-                                    boxDetails.map((box, boxIndex) => {
-                                        let booking = bookingData.find(
-                                            (b) => b.date === date && b.boxName === box.name && b.startTime === slot
-                                        );
+                    if (booking) {
+                        let rowSpan = getRowSpan(booking.startTime, booking.endTime, allSlots);
+                        let bgColor = booking.paymentMethod === "cash" ? "red" : "green";
 
-                                        if (booking) {
-                                            let rowSpan = getRowSpan(booking.startTime, booking.endTime, allSlots);
-                                            let bgColor = booking.paymentMethod === "cash" ? "red" : "green"; // Color for payment type
+                        return (
+                            <TableCell
+                                key={`${date}-${boxIndex}`}
+                                rowSpan={rowSpan}
+                                align="center"
+                                sx={{
+                                    backgroundColor: bgColor,
+                                    color: "white",
+                                    fontWeight: "bold",
+                                    border: "1px solid #ddd",
+                                    fontSize: { xs: "10px", sm: "12px", md: "14px" },
+                                    whiteSpace: "nowrap",
+                                    padding: { xs: "4px", sm: "6px", md: "8px" },
+                                }}
+                            >
+                                <p style={{ margin: "0px" }}>{booking.name}</p>
+                                <p style={{ margin: "0px" }}>{booking.phone}</p>
+                                <p style={{ margin: "0px" }}>{booking.email}</p>
+                                <span style={{ fontStyle: "italic" }}>{booking.status}</span>
+                                <p style={{ fontStyle: "italic", margin: "0px" }}>
+                                    {booking.price ? `Price: ${booking.price - 10}` : ""}
+                                </p>
+                            </TableCell>
+                        );
+                    }
 
-                                            return (
-                                                <TableCell
-                                                    key={`${date}-${boxIndex}`}
-                                                    rowSpan={rowSpan}
-                                                    align="center"
-                                                    sx={{
-                                                        backgroundColor: bgColor,
-                                                        color: "white",
-                                                        fontWeight: "bold",
-                                                        border: "1px solid #ddd",
-                                                        fontSize: { xs: "10px", sm: "12px", md: "14px" }, // Responsive text
-                                                        whiteSpace: "nowrap", // Prevent wrapping
-                                                        padding: { xs: "4px", sm: "6px", md: "8px" }, // Responsive padding
-                                                    }}
-                                                >
-                                                    <p style={{ margin: "0px" }}>{booking.name}</p>
-                                                    <p style={{ margin: "0px" }}>{booking.phone}</p>
-                                                    <p style={{ margin: "0px" }}>{booking.email}</p>
-                                                    <span style={{ fontStyle: "italic" }}>{booking.status}</span>
-                                                    <p style={{ fontStyle: "italic", margin: "0px" }}>
-                                                        {booking.price ? `Price: ${booking.price - 10}` : ""}
-                                                    </p>
-                                                </TableCell>
-                                            );
-                                        }
+                    // Ensure slots that are part of an ongoing booking are not displayed again
+                    let isPartOfBooking = bookingData.some(
+                        (b) =>
+                            b.date === date &&
+                            b.boxName === box.name &&
+                            allSlots.indexOf(b.startTime) < slotIndex &&
+                            allSlots.indexOf(b.endTime) > slotIndex
+                    );
 
-                                        // Skip rendering if slot is part of an ongoing booking
-                                        let isPartOfBooking = bookingData.some(
-                                            (b) =>
-                                                b.date === date &&
-                                                b.boxName === box.name &&
-                                                allSlots.indexOf(b.startTime) < slotIndex &&
-                                                allSlots.indexOf(b.endTime) > slotIndex
-                                        );
+                    return isPartOfBooking ? null : <TableCell key={`${date}-${boxIndex}`} />;
+                })
+            )}
+        </TableRow>
+    ))}
+</TableBody>
 
-                                        return isPartOfBooking ? null : <TableCell key={`${date}-${boxIndex}`} />;
-                                    })
-                                )}
-                            </TableRow>
-                        ))}
-                    </TableBody>
                 </Table>
             </TableContainer>
 
