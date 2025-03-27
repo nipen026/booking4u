@@ -129,14 +129,14 @@ const SlotsManagement = () => {
                 const endIndex = timeSlots.indexOf(formData.endTime);
     
                 // Ensure End Time is the same as Start Time
-                if (startIndex !== endIndex) {
-                    newErrors.endTime = 'End Time must be the same as Start Time';
-                }
+                // if (startIndex !== endIndex) {
+                //     newErrors.endTime = 'End Time must be the same as Start Time';
+                // }
     
-                // Ensure End Time is not before Start Time
-                if (endIndex < startIndex) {
-                    newErrors.endTime = 'End Time cannot be earlier than Start Time';
-                }
+                // // Ensure End Time is not before Start Time
+                // if (endIndex < startIndex) {
+                //     newErrors.endTime = 'End Time cannot be earlier than Start Time';
+                // }
             }
         }
     
