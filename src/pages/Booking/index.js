@@ -7,6 +7,7 @@ import CricketArena from "../../components/CricketArena"
 import Loader from "../../common/Loader"
 import { useLocation } from "react-router-dom"
 import { GET_BOX_BY_ID, GET_SLOTS } from "../../Api/get"
+import { Helmet } from "react-helmet-async"
 
 const Booking = ()  =>{
       const [loading, setLoading] = useState(true);
@@ -52,6 +53,41 @@ const fetchSlotData = async (date) => {
     if (loading) return <Loader />;
     return  (
         <>
+         <Helmet>
+                <title>
+                    {boxesData?.name
+                        ? `${boxesData.name} - Box Cricket Turf in Surat | Booking4u`
+                        : "Book Box Cricket Turf | Booking4u"}
+                </title>
+                <meta 
+                    name="description" 
+                    content={
+                        boxesData?.description
+                            ? boxesData.description
+                            : "Find and book the best box cricket turfs in Surat with Booking4u. Get instant slot booking for a hassle-free experience!"
+                    }
+                />
+                <meta 
+                    name="keywords" 
+                    content="Box Cricket Booking Surat, Turf Booking, Best Cricket Turf in Surat, Book Cricket Slot, Online Cricket Booking" 
+                />
+
+                {/* ✅ Open Graph (Social Media) */}
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content={boxesData?.name || "Book Box Cricket Turf | Booking4u"} />
+                <meta property="og:description" content={boxesData?.description || "Find and book the best box cricket turfs in Surat."} />
+                <meta property="og:image" content={boxesData?.image || "https://Booking4u.in/default-image.jpg"} />
+                <meta property="og:url" content={`https://Booking4u.in/booking/${location.state}`} />
+
+                {/* ✅ Twitter Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={boxesData?.name || "Book Box Cricket Turf | Booking4u"} />
+                <meta name="twitter:description" content={boxesData?.description || "Find and book the best box cricket turfs in Surat."} />
+                <meta name="twitter:image" content={boxesData?.image || "https://Booking4u.in/default-image.jpg"} />
+
+                {/* ✅ Canonical Tag */}
+                <link rel="canonical" href={`https://Booking4u.in/booking/${location.state}`} />
+            </Helmet>
         <Header/>
         <CricketArena boxesData={boxesData}/>
         <BookingSlots setGetSelectDate={setGetSelectDate} slotData={slotData} boxesData={boxesData}/>
