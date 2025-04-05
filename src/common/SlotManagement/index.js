@@ -31,7 +31,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useLocation } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import { ADD_SLOT, UPDATE_SLOT } from '../../Api/post';
-import { GET_BOX_BY_USER, GET_SLOTS_BY_BOX } from '../../Api/get';
+import { GET_BOX_BY_USER, GET_PENDNG_SLOTS, GET_SLOTS_BY_BOX } from '../../Api/get';
 import dayjs from 'dayjs';
 
 const timeSlots = [
@@ -45,9 +45,11 @@ const timeSlots = [
 const SlotsManagement = () => {
     const [slotsData, setSlotsData] = useState([]);
     const [openPopup, setOpenPopup] = useState(false);
-    const [boxesData, setBoxesData] = useState([])
+    const [boxesData, setBoxesData] = useState([]);
+
     const [formData, setFormData] = useState({
         boxId: '',
+        turfId: '',
         startTime: '',
         endTime: '',
         date: '',
@@ -56,7 +58,8 @@ const SlotsManagement = () => {
         price: '',
         payment: '',
         bookername: '',
-        type: 'manual'
+        type: 'manual',
+        advancepayment: ''
     });
     const [edit, setEdit] = useState(false);
     const [filterDate, setFilterDate] = useState('');
@@ -88,6 +91,8 @@ const SlotsManagement = () => {
         const period = hourInt >= 12 ? 'PM' : 'AM';
         return `${formattedHour}:${minute} ${period}`;
     };
+    const [pendingSlots, setPendingSlots] = useState([]);
+    const [slotsLoaded, setSlotsLoaded] = useState(false);
     const [errors, setErrors] = useState({});
     const location = useLocation();
 
@@ -106,16 +111,17 @@ const SlotsManagement = () => {
     // Validation Function
     const validateForm = () => {
         const newErrors = {};
-    
+
         // Required Field Validation
         if (!formData.boxId) newErrors.boxId = 'Box is required';
+        if (!formData.turfId) newErrors.turfId = 'Turf Id is required';
         if (!formData.date) newErrors.date = 'Date is required';
         if (!formData.firstname) newErrors.firstname = 'First name is required';
         if (!formData.lastname) newErrors.lastname = 'Last name is required';
         if (!formData.price) newErrors.price = 'Price is required';
         if (!formData.payment) newErrors.payment = 'Payment Method is required';
         if (!formData.bookername) newErrors.bookername = 'Booker name is required';
-    
+
         // Ensure Start Time and End Time are not selected if Date is empty
         if (!formData.date) {
             newErrors.startTime = 'Select a date first';
@@ -123,27 +129,24 @@ const SlotsManagement = () => {
         } else {
             if (!formData.startTime) newErrors.startTime = 'Start Time is required';
             if (!formData.endTime) newErrors.endTime = 'End Time is required';
-    
+
             if (formData.startTime && formData.endTime) {
-                const startIndex = timeSlots.indexOf(formData.startTime);
-                const endIndex = timeSlots.indexOf(formData.endTime);
-    
-                // Ensure End Time is the same as Start Time
-                // if (startIndex !== endIndex) {
-                //     newErrors.endTime = 'End Time must be the same as Start Time';
-                // }
-    
-                // // Ensure End Time is not before Start Time
-                // if (endIndex < startIndex) {
-                //     newErrors.endTime = 'End Time cannot be earlier than Start Time';
-                // }
+                const startIndex = pendingSlots.indexOf(formData.startTime);
+                const endIndex = pendingSlots.indexOf(formData.endTime);
+            
+                if (startIndex === -1 || endIndex === -1) {
+                    newErrors.startTime = 'Invalid Start Time';
+                    newErrors.endTime = 'Invalid End Time';
+                } else if (endIndex < startIndex) {
+                    newErrors.endTime = 'End Time must be after or equal to Start Time';
+                }
             }
         }
-    
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-    
+
 
     // Handle Add Slot
     const handleAddSlot = () => {
@@ -170,6 +173,7 @@ const SlotsManagement = () => {
 
         setFormData({
             boxId: '',
+            turfId: '',
             startTime: '',
             endTime: '',
             date: '',
@@ -178,6 +182,7 @@ const SlotsManagement = () => {
             price: '',
             payment: '',
             bookername: '',
+            advancepayment: '',
             type: 'manual'
         });
         setOpenPopup(false);
@@ -205,6 +210,7 @@ const SlotsManagement = () => {
 
         })
     }
+
     useEffect(() => {
         getSlotData()
     }, [location.pathname]);
@@ -220,15 +226,40 @@ const SlotsManagement = () => {
         setOpenPopup(true);
     };
     const getBookedTimes = () => {
+        if (!formData.date || !slotsLoaded) return [];
+
         return slotsData
-            .filter(slot => slot.date === formData.date) // Only consider slots for selected date
+            .filter(slot => slot.date === formData.date)
             .flatMap(slot => {
                 const startIdx = timeSlots.indexOf(formatTimeTo12Hour(slot.startTime));
                 const endIdx = timeSlots.indexOf(formatTimeTo12Hour(slot.endTime));
-                return timeSlots.slice(startIdx, endIdx); // Get all times between start and end
+                return timeSlots.slice(startIdx, endIdx);
             });
     };
-    const availableTimeSlots = timeSlots.filter(time => !getBookedTimes().includes(time));
+    const fetchPendingSlots = async (boxId, date) => {
+        if (!date) return;
+        const id = location.pathname.split('/')[2]
+        setSlotsLoaded(false);
+        try {
+            const res = await GET_PENDNG_SLOTS(id, date);
+            const sortedPendingSlots = timeSlots.filter(slot => res.data.slots.includes(slot));
+            setPendingSlots(sortedPendingSlots);
+            console.log(sortedPendingSlots);
+            
+            setSlotsLoaded(true);
+        } catch (err) {
+            console.error('Error fetching pending slots:', err);
+            setSlotsLoaded(true); // still allow UI to respond
+        }
+    };
+    useEffect(() => {
+        const boxId = location.pathname.split('/')[2];
+        if (formData.date) {
+            fetchPendingSlots(boxId, formData.date);
+        }
+    }, [formData.date]);
+
+
 
     return (
         <Container sx={{ my: 3 }} maxWidth={'2xl'}>
@@ -336,7 +367,25 @@ const SlotsManagement = () => {
                                 </FormControl>
                             </Grid>
                             <Grid item xs={12}>
+                                <FormControl fullWidth error={!!errors.turfId}>
+                                    <InputLabel>Turf</InputLabel>
+                                    <Select name="turfId" value={formData.turfId} onChange={handleChange}>
+                                        {boxesData
+                                            ?.find((box) => box.id === Number(formData.boxId)) // Find selected box
+                                            ?.turfs?.map((turf) => (
+                                                <MenuItem key={turf.id} value={turf.id}>
+                                                    {turf.turfname}
+                                                </MenuItem>
+                                            ))}
+                                    </Select>
+                                    <FormHelperText>{errors.turfId}</FormHelperText> {/* Corrected error key */}
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={12}>
                                 <TextField fullWidth label="Price" name="price" value={formData.price} onChange={handleChange} error={!!errors.price} helperText={errors.price} />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Advanvce Payment" name="advancepayment" value={formData.advancepayment} onChange={handleChange} />
                             </Grid>
                             <Grid item xs={12}>
                                 <FormControl fullWidth error={!!errors.payment}>
@@ -364,10 +413,10 @@ const SlotsManagement = () => {
 
                             {/* Disable Start and End Time selection if no Date is selected */}
                             <Grid item xs={6}>
-                                <FormControl fullWidth error={!!errors.startTime} disabled={!formData.date}>
+                                <FormControl fullWidth error={!!errors.startTime} disabled={!slotsLoaded}>
                                     <InputLabel>Start Time</InputLabel>
                                     <Select name="startTime" value={formData.startTime} onChange={handleChange}>
-                                        {availableTimeSlots.map((time) => (
+                                        {pendingSlots.map((time) => (
                                             <MenuItem key={time} value={time}>
                                                 {time}
                                             </MenuItem>
@@ -378,10 +427,10 @@ const SlotsManagement = () => {
                             </Grid>
 
                             <Grid item xs={6}>
-                                <FormControl fullWidth error={!!errors.endTime} disabled={!formData.date}>
+                                <FormControl fullWidth error={!!errors.endTime} disabled={!slotsLoaded}>
                                     <InputLabel>End Time</InputLabel>
                                     <Select name="endTime" value={formData.endTime} onChange={handleChange}>
-                                        {availableTimeSlots.map((time) => (
+                                        {pendingSlots.map((time) => (
                                             <MenuItem key={time} value={time}>
                                                 {time}
                                             </MenuItem>

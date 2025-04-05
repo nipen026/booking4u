@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import {
     Box, Typography, Button, Card, CardContent, Grid, Chip, Dialog,
-    DialogTitle, DialogContent, DialogActions, IconButton, TextField
+    DialogTitle, DialogContent, DialogActions, IconButton, TextField,
+    Select,
+    InputLabel,
+    FormControl,
+    MenuItem
 } from '@mui/material';
 import { FaEye, FaCalendarAlt } from 'react-icons/fa';
 import dayjs from 'dayjs';
@@ -73,7 +77,37 @@ const AdminAllBookings = ({ bookingsData }) => {
         console.log(`Exporting ${exportType} from ${startDate} to ${endDate}`);
         handleCloseExportDialog();
     }; 
-
+    const handleSelectRange = (range) => {
+        const today = dayjs();
+        let start, end;
+    
+        switch (range) {
+            case "This Week":
+                start = today.startOf('week');
+                end = today.endOf('week');
+                break;
+            case "Two Weeks":
+                start = today.startOf('week');
+                end = today.add(13, 'day');
+                break;
+            case "Three Weeks":
+                start = today.startOf('week');
+                end = today.add(20, 'day');
+                break;
+            case "This Month":
+                start = today.startOf('month');
+                end = today.endOf('month');
+                break;
+            default:
+                start = today;
+                end = today;
+        }
+    
+        setDateRange({
+            startDate: start.format("YYYY-MM-DD"),
+            endDate: end.format("YYYY-MM-DD")
+        });
+    };
     return (
         <Box sx={{ maxWidth: '1400px', mx: 'auto', p: 3 }}>
             <Typography variant="h4" fontWeight="bold" mb={2}>
@@ -110,7 +144,7 @@ const AdminAllBookings = ({ bookingsData }) => {
                                 <Grid container spacing={2} alignItems="center">
                                     <Grid item xs={12} sm={6}>
                                         <Typography variant="h6" fontWeight="bold" align='left'>
-                                            {booking?.Box?.name}
+                                            {booking?.Box?.name} 
                                         </Typography>
                                         <Typography sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
                                             <FaCalendarAlt style={{ marginRight: '8px' }} />
@@ -121,6 +155,9 @@ const AdminAllBookings = ({ bookingsData }) => {
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary" mt={1} align='left'>
                                             Booking ID: {booking?.id}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary" mt={1} align='left' sx={{textTransform:'capitalize'}}>
+                                            {booking?.Turf?.turfname}
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary" mt={1} align='left' sx={{textTransform:'capitalize'}}>
                                             Payment : {booking?.payment}
@@ -195,24 +232,20 @@ const AdminAllBookings = ({ bookingsData }) => {
             <Dialog open={exportDialog} onClose={handleCloseExportDialog} fullWidth maxWidth="sm">
                 <DialogTitle>Export {exportType}</DialogTitle>
                 <DialogContent>
-                    <TextField
-                        fullWidth
-                        label="Start Date"
-                        type="date"
-                        value={dateRange.startDate}
-                        onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
-                        sx={{ my: 2 }}
-                        InputLabelProps={{ shrink: true }}
-                    />
-                    <TextField
-                        fullWidth
-                        label="End Date"
-                        type="date"
-                        value={dateRange.endDate}
-                        onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
-                        sx={{ my: 2 }}
-                        InputLabelProps={{ shrink: true }}
-                    />
+                    <FormControl fullWidth sx={{ my: 2 }}>
+                    <InputLabel id="range-select-label">Select Range</InputLabel>
+                    <Select
+                        labelId="range-select-label"
+                        value={dateRange.label}
+                        label="Select Range"
+                        onChange={(e) => handleSelectRange(e.target.value)}
+                    >
+                        <MenuItem value="This Week">This Week</MenuItem>
+                        <MenuItem value="Two Weeks">Two Weeks</MenuItem>
+                        <MenuItem value="Three Weeks">Three Weeks</MenuItem>
+                        <MenuItem value="This Month">This Month</MenuItem>
+                    </Select>
+                </FormControl>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseExportDialog}  sx={{border:'1px solid forestgreen',background:'white',color:'forestgreen'}}>

@@ -74,8 +74,8 @@ const MyBookings = ({ boxesData }) => {
                         <CardContent>
                             <Grid container spacing={2}>
                                 <Grid item xs={12}>
-                                    <Typography variant="h6" fontWeight="bold">
-                                        {booking.Box.name}
+                                    <Typography variant="h6" fontWeight="bold" align='left'>
+                                        {booking.Box.name} - {booking.Turf.turfname}
                                     </Typography>
                                     <Typography sx={{ display: 'flex', gap: '10px', alignItems: 'center', mt: 1 }}>
                                         <FaCalendarAlt />

@@ -74,18 +74,24 @@ const CricketArena = ({ boxesData }) => {
                 <Grid container spacing={2} sx={{ mt: 3, alignItems: 'center' }}>
                     <Grid item xs={12} sm={4}>
                         <Card sx={{ textAlign: 'center', p: 2 }}>
-                            <Typography variant="h6" sx={{ color: 'forestgreen', fontWeight: '600' }}>₹{boxesData?.discountPrice ? boxesData?.discountPrice : boxesData?.pricePerHour }/hour {boxesData?.discountPrice ? <del style={{fontSize:'14px',color:'#d7d7d7',margin:'0px 0px 0px 10px'}}>₹{boxesData?.pricePerHour} / hr</del> : ''}</Typography>
+                            <Typography variant="h6" sx={{ color: 'forestgreen', fontWeight: '600' }}>₹{boxesData?.discountPrice ? boxesData?.discountPrice : boxesData?.pricePerHour}/hour {boxesData?.discountPrice ? <del style={{ fontSize: '14px', color: '#d7d7d7', margin: '0px 0px 0px 10px' }}>₹{boxesData?.pricePerHour} / hr</del> : ''}</Typography>
                             <Typography variant="body2" sx={{ fontWeight: '500' }}>Best rates in the city</Typography>
                         </Card>
                     </Grid>
 
-                    <Grid item xs={12} sm={4}>
-                        <Card sx={{ textAlign: 'center', p: 2 }}>
-                            <AccessTime sx={{ color: 'forestgreen' }} />
-                            <Typography variant="body2" sx={{ fontWeight: '500' }}>{boxesData?.slots[0]} - {boxesData?.slots.at(-1)}</Typography>
-                            <Typography variant="body2" sx={{ fontWeight: '500' }}>Open all days</Typography>
-                        </Card>
-                    </Grid>
+                    {boxesData?.turfs?.map((turf, index) => (
+                        <Grid item xs={12} sm={4} key={index}>
+                            <Card sx={{ textAlign: 'center', p: 2 }}>
+                                <AccessTime sx={{ color: 'forestgreen' }} />
+                                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                                    {turf.turfSlots[0]} - {turf.turfSlots.at(-1)}
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: '500' }}>
+                                    Open all days
+                                </Typography>
+                            </Card>
+                        </Grid>
+                    ))}
 
                     <Grid item xs={12} sm={4}>
                         <Card sx={{ textAlign: 'center', p: 2 }}>
@@ -113,7 +119,7 @@ const CricketArena = ({ boxesData }) => {
                     ))}
                 </Grid>
             </Container>
-            
+
         </Box>
     );
 };

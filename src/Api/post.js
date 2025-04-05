@@ -123,45 +123,6 @@ export const EXPORT_PAYMENT = async (data) => {
     })
 }
 
-// -------------------- Do Not Change ----------------//
-
-export const LOGIN = async (data) => {
-    return await new Promise((resolve, reject) => {
-        axios.post(`${base_url}/api/user/login`, data).then((res) => {
-            resolve(res);
-        }).catch((err) => {
-            reject(err);
-        })
-    })
-}
-export const REGISTER = async (data) => {
-    return await new Promise((resolve, reject) => {
-        axios.post(`${base_url}/api/user/register`, data).then((res) => {
-            resolve(res);
-        }).catch((err) => {
-            reject(err);
-        })
-    })
-}
-
-export const ADD_PAYMENT = async(data)=>{
-    return await new Promise((resolve, reject) => {
-        axios.post(`${base_url}/api/payment/create-order`, data).then((res) => {
-            resolve(res);
-        }).catch((err) => {
-            reject(err);
-        })
-    })
-}
-export const VERIFY_PAYMENT = async(data)=>{
-    return await new Promise((resolve, reject) => {
-        axios.post(`${base_url}/api/payment/verify-payment`, data).then((res) => {
-            resolve(res);
-        }).catch((err) => {
-            reject(err);
-        })
-    })
-}
 export const UPDATE_USER = async (id,data) => {
     const token =  localStorage.getItem('access-token')
     return await new Promise((resolve, reject) => {
@@ -212,6 +173,61 @@ export const CONTACT_US = async (data) => {
                 Authorization:`Bearer ${token}`
             }
         }).then((res) => {
+            resolve(res);
+        }).catch((err) => {
+            reject(err);
+        })
+    })
+}
+export const ADD_TURF = async (data) => {
+    const token =  localStorage.getItem('access-token')
+    return await new Promise((resolve, reject) => {
+        axios.post(`${base_url}/api/turf/add`, data,{
+            headers:{
+                Authorization:`Bearer ${token}`
+            }
+        }).then((res) => {
+            resolve(res);
+        }).catch((err) => {
+            reject(err);
+        })
+    })
+}
+
+
+// -------------------- Do Not Change ----------------//
+
+export const LOGIN = async (data) => {
+    return await new Promise((resolve, reject) => {
+        axios.post(`${base_url}/api/user/login`, data).then((res) => {
+            resolve(res);
+        }).catch((err) => {
+            reject(err);
+        })
+    })
+}
+export const REGISTER = async (data) => {
+    return await new Promise((resolve, reject) => {
+        axios.post(`${base_url}/api/user/register`, data).then((res) => {
+            resolve(res);
+        }).catch((err) => {
+            reject(err);
+        })
+    })
+}
+
+export const ADD_PAYMENT = async(data)=>{
+    return await new Promise((resolve, reject) => {
+        axios.post(`${base_url}/api/payment/create-order`, data).then((res) => {
+            resolve(res);
+        }).catch((err) => {
+            reject(err);
+        })
+    })
+}
+export const VERIFY_PAYMENT = async(data)=>{
+    return await new Promise((resolve, reject) => {
+        axios.post(`${base_url}/api/payment/verify-payment`, data).then((res) => {
             resolve(res);
         }).catch((err) => {
             reject(err);

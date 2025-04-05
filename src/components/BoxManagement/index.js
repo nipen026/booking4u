@@ -27,9 +27,10 @@ import {
 import { Edit, Delete, Visibility, Add } from "@mui/icons-material";
 import Carousel from "react-material-ui-carousel"; // Install: npm install react-material-ui-carousel
 import { GET_BOX_BY_USER } from "../../Api/get";
-import { ADD_BOX, UPDATE_BOX } from "../../Api/post";
+import { ADD_BOX, ADD_TURF, UPDATE_BOX } from "../../Api/post";
 import toast, { Toaster } from "react-hot-toast";
 import { Link } from "react-router-dom";
+import TurfForm from "../TurfForm";
 
 const BoxManagement = () => {
     const [boxes, setBoxes] = useState([]);
@@ -56,14 +57,20 @@ const BoxManagement = () => {
         discountPrice: "",
         details: "",
         facilities: [],
-        slots: [],
+        slots: null,
         googleMapLink: "",
         landmark: "",
         state: "",
         city: "",
         images: [],
     });
-
+    const [openTurfForm, setOpenTurfForm] = useState(false);
+    const [selectedBoxId, setSelectedBoxId] = useState(null);
+    const [turfForm, setTurfForm] = useState({
+        turfname: "",
+        turfSlots: [],
+    });
+    const [slotInput, setSlotInput] = useState("");
     // Open Dialog
     const handleOpen = () => setOpen(true);
     const handleClose = () => {
@@ -76,7 +83,7 @@ const BoxManagement = () => {
             discountPrice: "",
             details: "",
             facilities: [],
-            slots: [],
+            slots: null,
             googleMapLink: "",
             landmark: "",
             state: "",
@@ -117,7 +124,7 @@ const BoxManagement = () => {
                         boxData.append('images', image);
                     }
                 });
-            } else if (key === 'facilities' || key === 'slots') {
+            } else if (key === 'facilities') {
                 // Ensure facilities and slots are treated as arrays
                 const arrayValue = Array.isArray(value) ? value : value ? [value] : [];
                 boxData.append(key, JSON.stringify(arrayValue));
@@ -152,7 +159,7 @@ const BoxManagement = () => {
             discountPrice: '',
             details: '',
             facilities: [],
-            slots: [],
+            slots: null,
             googleMapLink: '',
             landmark: '',
             state: '',
@@ -191,6 +198,31 @@ const BoxManagement = () => {
         setOpen(true);
         setEdit(true)
     }
+
+    // Handle Turf Form Submission
+
+
+    const handleTurfSubmit = async (turfs) => {
+        try {
+            // Send the turfs data to your API (Replace with actual API call)
+            console.log("Submitting Turfs: ", turfs);
+            ADD_TURF(turfs).then((res) => {
+                console.log(res);
+            }).catch((err) => {
+                console.log(err);
+            })
+            // Show success toast
+            toast.success("Turfs Added Successfully");
+
+            // Close form
+            setOpenTurfForm(false);
+        } catch (error) {
+            console.error("Error adding turf:", error);
+            toast.error("Failed to add turfs");
+        }
+    };
+
+
     return (
         <Container maxWidth={'2xl'}>
             <Toaster />
@@ -209,7 +241,7 @@ const BoxManagement = () => {
 
                 {/* Box List in Cards */}
                 <Grid container spacing={3}>
-                    {boxesData.map((box) => (
+                    {boxesData?.map((box) => (
                         <Grid item xs={12} sm={6} md={4} lg={3} key={box.id}>
                             <Card sx={{ maxWidth: 345, boxShadow: 3, borderRadius: 2 }}>
                                 {box.images.length > 0 ? (
@@ -238,13 +270,16 @@ const BoxManagement = () => {
                                         })}
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', my: 1 }}>
-                                        {box.slots.map((item, index) => {
-                                            return (
+                                        {box.turfs.map((item, index) => (
+                                            <Box key={index}>
                                                 <Typography variant="body2" sx={{ fontWeight: '700' }} color="text.secondary">
-                                                    {item}
+                                                    {item.turfname}
                                                 </Typography>
-                                            )
-                                        })}
+                                                <Typography variant="body2" sx={{ fontWeight: '700' }} color="text.secondary">
+                                                    {item.turfSlots.join(' ')}
+                                                </Typography>
+                                            </Box>
+                                        ))}
                                     </Box>
                                     <Typography variant="body2">
                                         <strong>Price:</strong> ₹{box.pricePerHour} /hr
@@ -261,6 +296,12 @@ const BoxManagement = () => {
                                     </IconButton>
                                     <IconButton color="error" onClick={() => handleDelete(box.id)}>
                                         <Delete />
+                                    </IconButton>
+                                    <IconButton color="secondary" onClick={() => {
+                                        setSelectedBoxId(box.id);
+                                        setOpenTurfForm(true);
+                                    }}>
+                                        <Add />
                                     </IconButton>
                                 </CardActions>
                             </Card>
@@ -301,7 +342,7 @@ const BoxManagement = () => {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={12} my={2}>
+                        {/* <Grid item xs={12} my={2}>
                             <FormControl fullWidth>
                                 <InputLabel>Slots</InputLabel>
                                 <Select
@@ -324,7 +365,7 @@ const BoxManagement = () => {
                                     ))}
                                 </Select>
                             </FormControl>
-                        </Grid>
+                        </Grid> */}
                         <TextField label="Google Map Link" name="googleMapLink" fullWidth margin="dense" defaultValue={formData.googleMapLink} onChange={handleChange} />
                         <TextField label="Landmark" name="landmark" fullWidth margin="dense" defaultValue={formData.landmark} onChange={handleChange} />
                         <TextField label="State" name="state" fullWidth margin="dense" defaultValue={formData.state} onChange={handleChange} />
@@ -352,7 +393,7 @@ const BoxManagement = () => {
                                                 alt={`preview-${index}`}
                                                 width="80"
                                                 height="80"
-                                                style={{ borderRadius: 8,objectFit:'cover' }}
+                                                style={{ borderRadius: 8, objectFit: 'cover' }}
                                             />
                                         </Box>
                                     ))}
@@ -370,6 +411,12 @@ const BoxManagement = () => {
                         </Button>
                     </DialogActions>
                 </Dialog>
+                <TurfForm
+                    open={openTurfForm}
+                    onClose={() => setOpenTurfForm(false)}
+                    onSubmit={handleTurfSubmit}
+                    boxId={selectedBoxId}
+                />
             </Box>
         </Container>
     );
