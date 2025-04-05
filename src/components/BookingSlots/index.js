@@ -137,10 +137,14 @@ const BookingSlots = ({ setGetSelectDate,setGetTurfId, slotData, boxesData }) =>
                    variant="scrollable"
                    scrollButtons="auto"
                    aria-label="Turf Tabs"
+                   className='slots-tabs'
                    sx={{
                        mb: 3,
                        '& .MuiTabs-flexContainer': {
                            gap: '10px',
+                       },
+                       '& .MuiTabs-indicator': {
+                           background: 'transparent',
                        }
                    }}
                >
