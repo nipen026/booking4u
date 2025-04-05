@@ -81,10 +81,10 @@ const PopularCricket = ({boxesData}) => {
                                     <Box sx={{ display: 'flex',justifyContent:'space-between', alignItems: 'center', mt: 2 }}>
                                        <Box sx={{ display: 'flex',justifyContent:'space-between', alignItems: 'center', gap:'10px' }}>
                                        <Typography variant="h6" sx={{ color: '#000' }} fontWeight="bold" color="primary">
-                                        ₹{box.discountPrice}.00
+                                        {box.discountPrice ? `₹ ${box.discountPrice}.00` : `₹ ${box.pricePerHour}.00`}
                                         </Typography>
                                         <del>
-                                        ₹{box.pricePerHour}.00
+                                        {box.discountPrice ? `₹ ${box.pricePerHour}.00` : ''}
                                         </del>
                                        </Box>
                                         <Button variant="outlined" sx={{ borderColor: 'forestgreen', color: 'forestgreen' }}>Book Now</Button>

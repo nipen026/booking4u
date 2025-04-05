@@ -19,9 +19,9 @@ export const GET_BOX_BY_ID = async (id) => {
         })
     })
 }
-export const GET_SLOTS = async (id,date) => {
+export const GET_SLOTS = async (id,date,turfId) => {
     return await new Promise((resolve, reject) => {
-        axios.get(`${base_url}/api/slots/getSlots/${id}/${date}`).then((res) => {
+        axios.get(`${base_url}/api/slots/getSlots/${id}/${date}/${turfId}`).then((res) => {
             resolve(res);
         }).catch((err) => {
             reject(err);

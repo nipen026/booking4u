@@ -10,45 +10,58 @@ import { GET_BOX_BY_ID, GET_SLOTS } from "../../Api/get"
 import { Helmet } from "react-helmet-async"
 
 const Booking = ()  =>{
-      const [loading, setLoading] = useState(true);
-    const location = useLocation()
+    const [loading, setLoading] = useState(true);
+    const location = useLocation();
+
     const [boxesData, setBoxesData] = useState();
-    const [slotData,setSlotData] = useState();
-    const [getSelectDate,setGetSelectDate] = useState()
-    const dateStr = new Date();
-    const formattedDate = new Date(dateStr).toISOString().split('T')[0];
-    // Combined Effect for Loading and Data Fetching
+    const [slotData, setSlotData] = useState();
+    const [getSelectDate, setGetSelectDate] = useState(() => {
+        const today = new Date();
+        return new Date(today).toISOString().split('T')[0];
+    });
+
+    const [getTurfId, setGetTurfId] = useState();
+
+    // Fetch box data on mount
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchBoxData = async () => {
+        setLoading(true);
+
             try {
                 const res = await GET_BOX_BY_ID(location.state);
-                
-                setBoxesData(res.data.box); // Assuming data structure matches
+                setBoxesData(res.data.box);
+
+                // Set default turfId after fetching box data
+                const defaultTurfId = res.data.box?.turfs?.[0]?.id;
+                if (defaultTurfId) {
+                    setGetTurfId(defaultTurfId);
+                }
             } catch (error) {
-                console.error('Error fetching boxes:', error);
-            } finally {
-                setLoading(false);
+                console.error("Error fetching boxes:", error);
+            }finally{
+        setLoading(false);
             }
         };
-      
 
-        fetchData();
-        fetchSlotData(formattedDate);
-    }, []);
-useEffect(()=>{
-    fetchSlotData(getSelectDate)
-},[getSelectDate])
-const fetchSlotData = async (date) => {
-    
-    try {
-        const res = await GET_SLOTS(location.state,date);
-        setSlotData(res.data.slot)
-    } catch (error) {
-        console.error('Error fetching boxes:', error);
-    } finally {
-        setLoading(false);
-    }
-};
+        fetchBoxData();
+    }, [location.state]);
+
+    // Fetch slot data whenever turfId or selected date changes
+    useEffect(() => {
+        if (getTurfId && getSelectDate) {
+            fetchSlotData(getSelectDate, getTurfId);
+        }
+    }, [getTurfId, getSelectDate]);
+
+    const fetchSlotData = async (date, turfId) => {
+        // setLoading(true);
+        try {
+            const res = await GET_SLOTS(location.state, date, turfId);
+            setSlotData(res.data.slot);
+        } catch (error) {
+            console.error("Error fetching slots:", error);
+        } 
+    };
 
     if (loading) return <Loader />;
     return  (
@@ -90,7 +103,7 @@ const fetchSlotData = async (date) => {
             </Helmet>
         <Header/>
         <CricketArena boxesData={boxesData}/>
-        <BookingSlots setGetSelectDate={setGetSelectDate} slotData={slotData} boxesData={boxesData}/>
+        <BookingSlots setGetSelectDate={setGetSelectDate} setGetTurfId={setGetTurfId} slotData={slotData} boxesData={boxesData}/>
         <BookingCTA />
         <Footer/>
         </>
