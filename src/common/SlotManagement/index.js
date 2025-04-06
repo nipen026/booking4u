@@ -236,15 +236,14 @@ const SlotsManagement = () => {
                 return timeSlots.slice(startIdx, endIdx);
             });
     };
-    const fetchPendingSlots = async (boxId, date) => {
+    const fetchPendingSlots = async (boxId,turfId, date) => {
         if (!date) return;
-        const id = location.pathname.split('/')[2]
+        const id = location.pathname.split('/')[2]  
         setSlotsLoaded(false);
         try {
-            const res = await GET_PENDNG_SLOTS(id, date);
+            const res = await GET_PENDNG_SLOTS(id,turfId,date);
             const sortedPendingSlots = timeSlots.filter(slot => res.data.slots.includes(slot));
             setPendingSlots(sortedPendingSlots);
-            console.log(sortedPendingSlots);
             
             setSlotsLoaded(true);
         } catch (err) {
@@ -254,10 +253,10 @@ const SlotsManagement = () => {
     };
     useEffect(() => {
         const boxId = location.pathname.split('/')[2];
-        if (formData.date) {
-            fetchPendingSlots(boxId, formData.date);
+        if (formData.date && formData.turfId) {
+            fetchPendingSlots(boxId,formData.turfId, formData.date);
         }
-    }, [formData.date]);
+    }, [formData.date && formData.turfId]);
 
 
 

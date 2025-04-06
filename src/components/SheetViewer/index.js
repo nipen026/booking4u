@@ -279,8 +279,7 @@ const SheetViewer = () => {
                                                     b.startTime === slot
                                                 );
                                                 
-                                                console.log(bookingData.find(
-                                                    (b) => b))
+                                               
                                                 if (booking) {
                                                     const rowSpan = getRowSpan(booking.startTime, booking.endTime, allSlots);
                                                     const bgColor = booking.paymentMethod === "cash" ? "red" : "green";

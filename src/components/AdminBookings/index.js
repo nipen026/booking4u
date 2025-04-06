@@ -74,7 +74,7 @@ const AdminAllBookings = ({ bookingsData }) => {
         };
     
         navigate('/sheet', { state: data });
-        console.log(`Exporting ${exportType} from ${startDate} to ${endDate}`);
+        
         handleCloseExportDialog();
     }; 
     const handleSelectRange = (range) => {

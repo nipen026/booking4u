@@ -152,9 +152,9 @@ export const GET_ALL_ADMIN_BOOKING = async () => {
         throw error; // Ensure the error propagates
     }
 };
-export const GET_PENDNG_SLOTS = async (id,date) => {
+export const GET_PENDNG_SLOTS = async (id,turfId,date) => {
     return await new Promise((resolve, reject) => {
-        axios.get(`${base_url}/api/slots/getPendingSlots/${id}/${date}`).then((res) => {
+        axios.get(`${base_url}/api/slots/getPendingSlots/${id}/${turfId}/${date}`).then((res) => {
             resolve(res);
         }).catch((err) => {
             reject(err);
